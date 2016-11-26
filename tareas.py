@@ -203,7 +203,7 @@ class Tarea():
         estimadas = self.hh_estimadas
         hh = self.hh()
         if estimadas is None:
-            estimadas = 0
+            return None
         return (estimadas-hh)
 
     def hh(self,desde=None,hasta=None,alias=None):
@@ -270,11 +270,15 @@ class Tarea():
             print 'id:{}\tsin cambios'.format(self.id)
 
     def formatear(self,detalle=False,desde=None,hasta=None):
+        if self.id is None:
+            return ''
         hhp = ''
         if desde is not None or hasta is not None:
             hhp = '{}\t'.format(self.hh(desde=desde,hasta=hasta))
-        if self.id is None:
-            return ''
+        dif = '-'
+        if self.hh_estimadas is not None:
+            dif = self.diferencia()
+
         if detalle:
             termino = ''
             if self.estado == TERMINADO and self.terminada is not None:
@@ -291,12 +295,12 @@ class Tarea():
                     self.estado,
                     self.hh(),
                     self.hh_estimadas,
-                    self.diferencia(),
+                    dif,
                     termino,
                     fl,
                     self.resta())
         else:
-            return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,self.diferencia(),self.resta(),self.nombre)
+            return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre)
 
 def pausar_todo():
     lista = tareas(imprimir=False)
