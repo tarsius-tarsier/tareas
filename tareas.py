@@ -28,31 +28,40 @@ def proyectos(imprimir=True):
         proyectos.append(p)
     return proyectos
 
-def tareas(imprimir=True,proyectos=None,estados=None):
-    select = 'select * from tarea ';
-    restr = ''
-    where = ''
+def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None):
+    query = 'select * from tarea ';
+    filtros = []
+    valores = []
+
     if proyectos is not None:
-        restr = 'proyecto_id in ({}) '.format(','.join([str(x) for x in proyectos]))
-        where = 'where '
+        filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
+        valores  += proyectos
 
     if estados is not None:
-        o = ''
-        if proyectos is not None:
-            o = 'and '
-        else:
-            where = 'where '
-        restr = '{}{}estado in ({}) '.format(restr,o,','.join(["'{}'".format(x) for x in estados]))
+        filtros  += ['estado in({})'.format(','.join('?' for x in estados))]
+        valores  += estados
 
-    cursor.execute('{}{}{} order by creada asc'.format(select,where,restr))
+    if desde is not None:
+        filtros  += ['id in(select distinct tarea_id from lapso where termino>=?)']
+        valores  += [desde]
+
+    if hasta is not None:
+        filtros  += ['id in(select distinct tarea_id from lapso where termino<=?)']
+        valores  += [hasta]
+
+    if len(filtros) > 0:
+        query += 'where '
+
+    query = '{}{} order by creada asc'.format(query,' and '.join(filtros))
+    cursor.execute(query, valores)
     r = cursor.fetchall()
     if imprimir:
-        print encabezado_tarea()
+        print encabezado_tarea(desde=desde,hasta=hasta)
     tareas = []
     for fila in r:
         t = Tarea(tupla=fila)
         if imprimir:
-            print t.formatear()
+            print t.formatear(desde=desde,hasta=hasta)
         tareas.append(t)
     return tareas
 
@@ -72,7 +81,11 @@ class Proyecto():
         return '{}\t{}'.format(self.id,self.nombre)
 
 def convierte_a_unix(fecha):
-    return time.mktime(datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S').timetuple()) 
+    try:
+       r = time.mktime(datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S').timetuple()) 
+    except:
+       r = None
+    return r
 
 def convierte_desde_unix(unix):
     return datetime.fromtimestamp(int(unix))
@@ -256,7 +269,10 @@ class Tarea():
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
-    def formatear(self,detalle=False):
+    def formatear(self,detalle=False,desde=None,hasta=None):
+        hhp = ''
+        if desde is not None or hasta is not None:
+            hhp = '{}\t'.format(self.hh(desde=desde,hasta=hasta))
         if self.id is None:
             return ''
         if detalle:
@@ -280,7 +296,7 @@ class Tarea():
                     fl,
                     self.resta())
         else:
-            return '{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),self.diferencia(),self.resta(),self.nombre)
+            return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,self.diferencia(),self.resta(),self.nombre)
 
 def pausar_todo():
     lista = tareas(imprimir=False)
@@ -290,8 +306,11 @@ def pausar_todo():
 def encabezado_proyecto():
     return 'id\tnombre'
 
-def encabezado_tarea():
-    return 'id\tpid\testado\thh\tdif\tr\ttarea'
+def encabezado_tarea(desde=None,hasta=None):
+    hhp = ''
+    if desde is not None or hasta is not None:
+        hhp = 'hhp\t'
+    return 'id\tpid\testado\thh\t{}dif\tr\ttarea'.format(hhp)
 
 def main():
     p = argparse.ArgumentParser()
@@ -338,7 +357,7 @@ def main():
         t = Tarea(a.pausar)
         t.pausar()
     if a.tareas:
-        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado)
+        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=convierte_a_unix(a.desde),hasta=convierte_a_unix(a.hasta))
     if a.horashombre:
         t = Tarea(a.horashombre)
         print t.hh(desde=convierte_a_unix(a.desde),hasta=convierte_a_unix(a.hasta))
