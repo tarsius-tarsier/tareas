@@ -192,7 +192,7 @@ class Tarea():
     def resta(self):
         ahora = datetime.now()
         if self.fecha_limite is None:
-            return 'i'
+            return '-'
         fecha_limite = convierte_desde_unix(self.fecha_limite)
         diferencia = fecha_limite-ahora
         if self.terminada and self.estado == TERMINADO: 
