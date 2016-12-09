@@ -4,6 +4,7 @@ import time
 import shutil
 import os
 from datetime import datetime
+from string import Template
 
 conexion = sqlite3.connect('tareas.db')
 cursor   = conexion.cursor()
@@ -14,6 +15,10 @@ CURSANDO  = 'c'
 TERMINADO = 't'
 NUEVO     = 'n'
 PAUSADO   = 'p'
+
+OBS_RIESGO  = 'r'
+OBS_TODO    = 't'
+OBS_AMENAZA = 'a'
 
 def proyectos(imprimir=True):
     cursor.execute('select * from proyecto order by nombre')
@@ -27,6 +32,33 @@ def proyectos(imprimir=True):
             print p.formatear()
         proyectos.append(p)
     return proyectos
+
+def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None):
+    filtros = ['completado=?','tipo=?']
+    valores = [completado,tipo]
+    if desde is not None:
+        filtros  += ['termino>=?)']
+        valores  += [desde]
+
+    if hasta is not None:
+        filtros  += ['termino<=?']
+        valores  += [hasta]
+
+    query = ('select id, '
+             '       observacion, '
+             '       tipo, '
+             '       prioridad, '
+             '       completado, '
+             '       creado, '
+             '       estado_del_arte_id, '
+             '       modificado, '
+             '       tarea_id '
+             'from observacion ')
+
+    query += 'where '
+    query = '{}{} order by creado asc'.format(query,' and '.join(filtros))
+    cursor.execute(query,valores)
+    return [Observacion(tupla=r) for r in cursor.fetchall()]
 
 def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None):
     query = 'select * from tarea ';
@@ -97,6 +129,7 @@ class Tarea():
         self.proyecto_id  = proyecto
         self.estimacion   = estimacion
         self.fecha_limite = None
+        self.observaciones = []
         fecha_limite_string = fecha_limite
         if fecha_limite_string is not None:
             self.fecha_limite = convierte_a_unix(fecha_limite_string)
@@ -105,9 +138,28 @@ class Tarea():
         if tupla is not None:
             self.desde_tupla(tupla)
 
+    def carga_observaciones(self):
+        self.observaciones = []
+        query = ('select id, '
+                 '       observacion, '
+                 '       tipo, '
+                 '       prioridad, '
+                 '       completado, '
+                 '       creado, '
+                 '       estado_del_arte_id, '
+                 '       modificado, '
+                 '       tarea_id '
+                 'from observacion where tarea_id=? order by tipo asc,prioridad asc')
+        cursor.execute(query,[self.id])
+        res = cursor.fetchall()
+        for r in res:
+            o = Observacion(tupla=r)
+            self.observaciones += [o]
+
     def eliminar(self,id):
         cursor.execute("delete from log where tarea_id=?",(id, ))
         cursor.execute("delete from lapso where tarea_id=?",(id, ))
+        cursor.execute("delete from observacion where tarea_id=?", (id, ))
         cursor.execute("delete from tarea where id=?", (id, ))
         conexion.commit()
 
@@ -288,7 +340,9 @@ class Tarea():
                 fl = ''
             else:
                 fl = convierte_desde_unix(self.fecha_limite)
-            return 'id:\t{}\npid:\t{}\nnombre:\t{}\nestado:\t{}\nhh:\t{}\nest:\t{}\ndif:\t{}\n{}fl:\t{}\nr:\t{}'.format(
+            self.carga_observaciones()
+            obs_str =  '\n'.join([o.formatear() for o in self.observaciones])
+            return 'id:\t{}\npid:\t{}\nnombre:\t{}\nestado:\t{}\nhh:\t{}\nest:\t{}\ndif:\t{}\n{}fl:\t{}\nr:\t{}\nobs:\n{}'.format(
                     self.id,
                     self.proyecto_id,
                     self.nombre,
@@ -298,7 +352,7 @@ class Tarea():
                     dif,
                     termino,
                     fl,
-                    self.resta())
+                    self.resta(),obs_str)
         else:
             return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre)
 
@@ -315,6 +369,196 @@ def encabezado_tarea(desde=None,hasta=None):
     if desde is not None or hasta is not None:
         hhp = 'hhp\t'
     return 'id\tpid\testado\thh\t{}dif\tr\ttarea'.format(hhp)
+
+class EstadoDelArte():
+    def __init__(self,pid=None,fecha=None,carga=True):
+        self.proyecto_id = pid
+        self.fecha       = fecha
+        self.creado      = None
+        self.modificado  = None
+        self.frecuencia  = None
+        self.todo        = []
+        self.riesgos     = []
+        self.amenazas    = []
+        if carga:
+            self.carga()
+            self.carga_observaciones()
+
+    def anexa_observacion(self,tarea_id):
+        query = 'update observacion set estado_del_arte_id=? where id=?'
+        valores = [self.id,tarea_id]
+        cursor.execute(query,valores)
+        conexion.commit()
+
+    def get_todo(self,imprimir=True):
+        for t in self.todo:
+            if imprimir:
+                print t.formatear()
+
+    def get_amenazas(self,imprimir=True):
+        for a in self.amenazas:
+            if imprimir:
+                print a.formatear()
+
+    def get_riesgos(self,imprimir=True):
+        for r in self.riesgos:
+            if imprimir:
+                print r.formatear()
+
+    def carga_observaciones(self):
+        query = ('select id, '
+                 '       observacion, '
+                 '       tipo, '
+                 '       prioridad, '
+                 '       completado, '
+                 '       creado, '
+                 '       estado_del_arte_id, '
+                 '       modificado, '
+                 '       tarea_id '
+                 'from observacion where estado_del_arte_id=? order by prioridad asc')
+        cursor.execute(query,[self.id])
+        resultado = cursor.fetchall()
+        for r in resultado:
+            i = Observacion(tupla=r)
+            if i.tipo == OBS_TODO:
+                self.todo    += [i]
+            if i.tipo == OBS_RIESGO:
+                self.riesgos += [i]
+            if i.tipo == OBS_AMENAZA:
+                self.amenaza += [i]
+
+    def plantilla(self):
+        "devuelve la plantilla"
+        f = open('plantilla.txt')
+        src = Template(f.read())
+        f.close()
+        d = {'fecha': convierte_desde_unix(self.fecha).strftime('%Y-%m-%d'),
+             'frecuencia':self.frecuencia,
+             'todo':"".join([t.plantilla() for t in self.todo]),
+             'amenazas':"".join([t.plantilla() for t in self.amenazas]),
+             'riesgos':"".join([r.plantilla() for r in self.riesgos])}
+        return src.substitute(d)
+
+    def formatear(self):
+        f = convierte_desde_unix(self.fecha).strftime('%Y-%m-%d')
+        return 'fecha:\t{}\npid\t{}'.format(f,self.proyecto_id)
+
+    def carga(self):
+        "carga un plan, si este no existe lo crea"
+        query = ('select id,proyecto_id,fecha,creado,modificado '
+                 'from estado_del_arte where fecha=? and proyecto_id=?')
+        valores = [self.fecha,self.proyecto_id]
+        cursor.execute(query,valores)
+        r = cursor.fetchone()
+        if r is None:
+            id = self.crea()
+        else:
+            id = r[0]
+        self.desde_db(id)
+
+    def crea(self):
+        "crea un estado_del_arte devolviendo el id"
+        query   = 'insert into estado_del_arte (proyecto_id,fecha) values (?,?)'
+        valores = [self.proyecto_id,self.fecha]
+        cursor.execute(query,valores)
+        conexion.commit()
+        return cursor.lastrowid
+
+    def desde_db(self,id):
+        "inicializa los atributos de un plan"
+        query = ('select id,proyecto_id,fecha,creado,modificado,frecuencia '
+                 'from estado_del_arte where id=?')
+        valores = [id]
+        cursor.execute(query,valores)
+        r = cursor.fetchone()
+        self.id          = r[0]
+        self.proyecto_id = r[1]
+        self.fecha       = r[2]
+        self.creado      = r[3]
+        self.modificado  = r[4]
+        self.frecuencia  = r[5]
+
+    def agrega_observacion(self,observacion,tipo=None,prioridad=None):
+        "agrega una observacion al plan"
+        o = Observacion()
+        o.crea()
+
+    def elimina(self,id):
+        "elimina una observacion del estado del arte"
+
+class Observacion():
+    def __init__(self,id=None,tupla=None):
+        self.id          = id
+        self.observacion = None
+        self.tipo        = OBS_TODO
+        self.prioridad   = 1
+        self.completado  = False
+        self.estado_del_arte_id = None
+        self.tarea_id    = None
+        if tupla is not None:
+            self.desde_tupla(tupla)
+
+    def formatear_todo(self):
+        return '{}\t{}\t{}\t{}'.format(self.id,self.prioridad,self.tarea_id,self.observacion)
+
+    def formatear(self):
+        return '{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.observacion)
+    
+    def completa(self):
+        ahora = int(time.time())
+        query = 'update observacion set completado=?,modificado=? where id=?'
+        valores = [True,ahora,self.id]
+        cursor.execute(query,valores)
+        conexion.commit()
+
+    def plantilla(self):
+        "devuelve la plantilla cargada"
+        f = open('plantilla_obs.txt')
+        src = Template(f.read())
+        f.close()
+
+        tarea = '[{}] '.format(self.tarea_id)
+        if self.tarea_id is None:
+            tarea = ''
+
+        d = {'tarea_id': self.tarea_id,
+             'prioridad':self.prioridad,
+             'tarea':tarea,
+             'observacion':self.observacion}
+        return src.substitute(d)
+
+    def desde_tupla(self,r):
+        self.id                 = r[0]
+        self.observacion        = r[1]
+        self.tipo               = r[2]
+        self.prioridad          = r[3]
+        self.completado         = r[4]
+        self.creado             = r[5]
+        self.estado_del_arte_id = r[6]
+        self.modificado         = r[7]
+        self.tarea_id           = r[8]
+
+    def formatea(self):
+        "formatea "
+        return 'id:\t{}\ttipo:\t{}\tcom:\t{}\tobs:\t{}'.format(self.id,self.tipo,self.completado,self.obs)
+
+    def crea(self):
+        "la logica necesaria para crear una observacion"
+        insert   = ('insert into observacion (observacion, '
+                                             'tipo, '
+                                             'prioridad, '
+                                             'estado_del_arte_id, '
+                                             'tarea_id, '
+                                             'completado) '
+                    'values (?,?,?,?,?,?) ')
+        valores = [self.observacion,
+                   self.tipo,
+                   self.prioridad,
+                   self.estado_del_arte_id,
+                   self.tarea_id,
+                   self.completado]
+        cursor.execute(insert,valores)
+        conexion.commit()
 
 def main():
     p = argparse.ArgumentParser()
@@ -339,6 +583,11 @@ def main():
     p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
     p.add_argument('-de','--desde',help='desde')
     p.add_argument('-ha','--hasta',help='hasta')
+    p.add_argument('-o','--observacion',help='observacion')
+    p.add_argument('-or','--observacionriesgo',action='store_true',help='observacion de riesgo')
+    p.add_argument('-ot','--observaciontodo',action='store_true',help='observacion todo')
+    p.add_argument('-oa','--observacionamenaza',action='store_true',help='observacion amenaza')
+    p.add_argument('-op','--observacionprioridad',help='observacion prioridad')
     a = p.parse_args()
     if a.cerrar:
         pausar_todo()
@@ -362,21 +611,43 @@ def main():
         t.pausar()
     if a.tareas:
         tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=convierte_a_unix(a.desde),hasta=convierte_a_unix(a.hasta))
+
     if a.horashombre:
         t = Tarea(a.horashombre)
         print t.hh(desde=convierte_a_unix(a.desde),hasta=convierte_a_unix(a.hasta))
+
     if a.ver:
         t = Tarea(a.ver)
         print t.formatear(detalle=True)
+
     if a.agrega:
         t = Tarea(nombre=a.agrega,proyecto=a.proyecto,estimacion=a.estimacion,fecha_limite=a.fechalimite)
         t.guardar()
         print t.formatear()
+        procesa_argumento_observacion(parser=a,tarea_id=t.id)
+
     if a.proyectos:
         proyectos()
+
     if a.editar:
         t = Tarea(a.editar)
         t.editar(nombre=a.nombre,fecha_limite=a.fechalimite,estimacion=a.estimacion)
+        procesa_argumento_observacion(parser=a,tarea_id=t.id)
+
+def procesa_argumento_observacion(parser, tarea_id=None,estado_del_arte_id=None):
+     if parser.observacion:
+         tipo_obs = None
+         if parser.observacionriesgo:
+             tipo_obs = OBS_RIESGO
+         if parser.observaciontodo:
+             tipo_obs = OBS_TODO
+         if parser.observacionamenaza:
+             tipo_obs = OBS_AMENAZA
+         o = Observacion()
+         o.observacion=parser.observacion
+         o.tarea_id = tarea_id
+         o.tipo = tipo_obs
+         o.crea()
 
 if __name__ == '__main__':
     main()
