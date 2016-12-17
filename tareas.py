@@ -3,7 +3,7 @@ import argparse
 import time
 import shutil
 import os
-from datetime import datetime
+import datetime
 from string import Template
 
 conexion = sqlite3.connect('tareas.db')
@@ -114,13 +114,13 @@ class Proyecto():
 
 def convierte_a_unix(fecha):
     try:
-       r = time.mktime(datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S').timetuple()) 
+       r = time.mktime(datetime.datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S').timetuple()) 
     except:
        r = None
     return r
 
 def convierte_desde_unix(unix):
-    return datetime.fromtimestamp(int(unix))
+    return datetime.datetime.fromtimestamp(int(unix))
 
 class Tarea():
     def __init__(self,id=None,tupla=None,nombre=None,proyecto=None,estimacion=None,fecha_limite=None):
@@ -242,7 +242,7 @@ class Tarea():
         self.desde_tupla(r)
 
     def resta(self):
-        ahora = datetime.now()
+        ahora = datetime.datetime.now()
         if self.fecha_limite is None:
             return '-'
         fecha_limite = convierte_desde_unix(self.fecha_limite)
@@ -583,6 +583,7 @@ def main():
     p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
     p.add_argument('-de','--desde',help='desde')
     p.add_argument('-ha','--hasta',help='hasta')
+
     p.add_argument('-o','--observacion',help='observacion')
     p.add_argument('-or','--observacionriesgo',action='store_true',help='observacion de riesgo')
     p.add_argument('-ot','--observaciontodo',action='store_true',help='observacion todo')
@@ -610,7 +611,7 @@ def main():
         t = Tarea(a.pausar)
         t.pausar()
     if a.tareas:
-        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=convierte_a_unix(a.desde),hasta=convierte_a_unix(a.hasta))
+        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
 
     if a.horashombre:
         t = Tarea(a.horashombre)
@@ -633,6 +634,56 @@ def main():
         t = Tarea(a.editar)
         t.editar(nombre=a.nombre,fecha_limite=a.fechalimite,estimacion=a.estimacion)
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
+
+def alias_fecha(alias,incluye_hora=False):
+    fecha = None
+    if alias == '' or alias == 'hoy':
+        fecha = datetime.datetime.today().date()
+    elif alias == 'ayer':
+        fecha = datetime.datetime.today().date() - timedelta(1)
+    else:
+        try:
+            fecha = datetime.datetime.strptime(alias,'%Y-%m-%d').date()
+        except:
+            fecha = None
+    return time.mktime(fecha.timetuple())
+
+def alias_fechahora(alias):
+    fecha = None
+    hoy = datetime.datetime.today()
+    if alias == '' or alias == 'hoy':
+        fecha_hora = datetime.datetime.combine(hoy,datetime.time())
+    elif alias == 'ayer':
+        fecha = hoy.date() - datetime.timedelta(1)
+        fecha_hora = datetime.datetime.combine(fecha,datetime.time())
+    else:
+        try:
+            spliteados = alias.split('-')
+            hora    = 0
+            minuto  = 0
+            segundo = 0
+            if len(spliteados) == 1:
+                dia  = int(spliteados[0])
+                mes  = hoy.month
+                ano  = hoy.year
+                fecha_hora = datetime.datetime(ano,mes,dia,hora,minuto,segundo)
+            elif len(spliteados) == 2:
+                dia  = int(spliteados[1])
+                mes  = int(spliteados[0])
+                ano = hoy.year
+                fecha_hora = datetime.datetime(ano,mes,dia,hora,minuto,segundo)
+            elif len(spliteados) == 3:
+                dia  = int(spliteados[2])
+                mes  = int(spliteados[1])
+                ano  = int(spliteados[0])
+                fecha_hora = datetime.datetime(ano,mes,dia,hora,minuto,segundo)
+            else:
+                fecha_hora = datetime.datetime.strptime(alias,'%Y-%m-%d %H:%M:%S')
+
+        except:
+            return None
+    print fecha_hora
+    return (fecha_hora - datetime.datetime(1970,1,1)).total_seconds()
 
 def procesa_argumento_observacion(parser, tarea_id=None,estado_del_arte_id=None):
      if parser.observacion:
