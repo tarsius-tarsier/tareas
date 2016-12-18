@@ -673,16 +673,26 @@ def alias_fechahora(alias):
                 ano = hoy.year
                 fecha_hora = datetime.datetime(ano,mes,dia,hora,minuto,segundo)
             elif len(spliteados) == 3:
-                dia  = int(spliteados[2])
+                parte_fecha_hora = alias.split(' ')
+                if len(parte_fecha_hora) == 2:
+                    parte_hora_min_seg = parte_fecha_hora[1].split(':')
+                    if len(parte_hora_min_seg) == 2:
+                        minuto = int(parte_hora_min_seg[1])
+                        hora   = int(parte_hora_min_seg[0])
+                    elif len(parte_hora_min_seg) == 3:
+                        segundo = int(parte_hora_min_seg[2])
+                        minuto  = int(parte_hora_min_seg[1])
+                        hora    = int(parte_hora_min_seg[0])
+                    dia  = int(parte_fecha_hora[0].split('-')[2])
+                else:
+                    dia  = int(spliteados[2])
                 mes  = int(spliteados[1])
                 ano  = int(spliteados[0])
                 fecha_hora = datetime.datetime(ano,mes,dia,hora,minuto,segundo)
             else:
                 fecha_hora = datetime.datetime.strptime(alias,'%Y-%m-%d %H:%M:%S')
-
         except:
             return None
-    print fecha_hora
     return (fecha_hora - datetime.datetime(1970,1,1)).total_seconds()
 
 def procesa_argumento_observacion(parser, tarea_id=None,estado_del_arte_id=None):
