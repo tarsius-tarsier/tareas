@@ -583,7 +583,6 @@ def main():
     p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
     p.add_argument('-de','--desde',help='desde')
     p.add_argument('-ha','--hasta',help='hasta')
-
     p.add_argument('-o','--observacion',help='observacion')
     p.add_argument('-or','--observacionriesgo',action='store_true',help='observacion de riesgo')
     p.add_argument('-ot','--observaciontodo',action='store_true',help='observacion todo')
@@ -592,48 +591,43 @@ def main():
     a = p.parse_args()
     if a.cerrar:
         pausar_todo()
-    if a.archiva:
+    elif a.archiva:
         t = Tarea()
         t.archivar(a.archiva)
-    if a.elimina:
+    elif a.elimina:
         t = Tarea()
         t.eliminar(a.elimina)
-    if a.recupera:
+    elif a.recupera:
         t = Tarea()
         t.recuperar(a.recupera)
-    if a.iniciar:
+    elif a.iniciar:
         t = Tarea(a.iniciar)
         t.iniciar()
-    if a.terminar:
+    elif a.terminar:
         t = Tarea(a.terminar)
         t.terminar()
-    if a.pausar:
+    elif a.pausar:
         t = Tarea(a.pausar)
         t.pausar()
-    if a.tareas:
-        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
-
-    if a.horashombre:
+    elif a.horashombre:
         t = Tarea(a.horashombre)
         print t.hh(desde=convierte_a_unix(a.desde),hasta=convierte_a_unix(a.hasta))
-
-    if a.ver:
+    elif a.proyectos:
+        proyectos()
+    elif a.ver:
         t = Tarea(a.ver)
         print t.formatear(detalle=True)
-
-    if a.agrega:
+    elif a.agrega:
         t = Tarea(nombre=a.agrega,proyecto=a.proyecto,estimacion=a.estimacion,fecha_limite=a.fechalimite)
         t.guardar()
         print t.formatear()
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
-
-    if a.proyectos:
-        proyectos()
-
-    if a.editar:
+    elif a.editar:
         t = Tarea(a.editar)
         t.editar(nombre=a.nombre,fecha_limite=a.fechalimite,estimacion=a.estimacion)
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
+    elif a.tareas or not a.tareas:
+        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
 
 def alias_fecha(alias,incluye_hora=False):
     fecha = None
