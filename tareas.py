@@ -1,4 +1,5 @@
-﻿import sqlite3
+#!/usr/bin/env python
+import sqlite3
 import argparse
 import time
 import shutil
@@ -6,8 +7,18 @@ import os
 import datetime
 from string import Template
 
-conexion = sqlite3.connect('tareas.db')
-cursor   = conexion.cursor()
+def conexion_db():
+   config= None
+   for loc in os.curdir, os.path.join(os.path.expanduser("~"),'.tareas'), "/etc/tareas", os.environ.get("TAREAS_CONF"):
+       try:
+           ruta_db = os.path.join(loc,"tareas.db")
+           if os.path.exists(ruta_db):
+               return sqlite3.connect(os.path.join(loc,"tareas.db"))
+       except IOError:
+           pass
+
+conexion    = conexion_db()
+cursor      = conexion.cursor()
 escritorio  = os.path.join(os.path.expanduser('~'),'Desktop')
 ruta_archivos  = os.path.join(os.path.expanduser('~'),'workspace')
 
