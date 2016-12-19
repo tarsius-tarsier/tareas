@@ -13,8 +13,11 @@ def terminar(id):
 def main():
     a = argparse.ArgumentParser()
     tipos = a.add_mutually_exclusive_group()
-    tipos.add_argument('-a',
-                       '--amenazas',
+    tipos.add_argument('-n', '--normal',
+                       action='store_const',
+                       const=tareas.OBS_NORMAL,
+                       help='lista observaciones normales')
+    tipos.add_argument('-a', '--amenazas',
                        action='store_const',
                        const=tareas.OBS_AMENAZA,
                        help='lista amenazas')
@@ -37,6 +40,8 @@ def main():
         listar(tipo=p.amenazas)
     elif p.todo:
         listar(tipo=p.todo)
+    elif p.normal:
+        listar(tipo=p.normal)
     elif p.terminar:
         terminar(p.terminar)
 
