@@ -2,8 +2,8 @@
 import tareas
 import argparse
 
-def listar(tipo=None,completado=False):
-    for x in tareas.get_observaciones(tipo=tipo,completado=completado):
+def listar(tipo=None,completado=False,proyectos=None):
+    for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos):
         print x.formatear_todo()
 
 def terminar(id):
@@ -32,16 +32,17 @@ def main():
                        const=tareas.OBS_TODO,
                        help='lista cosas por hacer')
     a.add_argument('-t','--terminar',type=int,help='termina')
+    a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro proyecto')
 
     p = a.parse_args()
     if p.riesgos:
-        listar(tipo=p.riesgos)
+        listar(tipo=p.riesgos,proyectos=p.filtroproyecto)
     elif p.amenazas:
-        listar(tipo=p.amenazas)
+        listar(tipo=p.amenazas,proyectos=p.filtroproyecto)
     elif p.todo:
-        listar(tipo=p.todo)
+        listar(tipo=p.todo,proyectos=p.filtroproyecto)
     elif p.normal:
-        listar(tipo=p.normal)
+        listar(tipo=p.normal,proyectos=p.filtroproyecto)
     elif p.terminar:
         terminar(p.terminar)
 

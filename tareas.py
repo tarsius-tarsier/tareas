@@ -45,9 +45,13 @@ def proyectos(imprimir=True):
         proyectos.append(p)
     return proyectos
 
-def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None):
+def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None):
     filtros = ['completado=?','tipo=?']
     valores = [completado,tipo]
+    if proyectos is not None:
+        filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
+        valores  += proyectos
+
     if desde is not None:
         filtros  += ['termino>=?)']
         valores  += [desde]
@@ -56,16 +60,17 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None):
         filtros  += ['termino<=?']
         valores  += [hasta]
 
-    query = ('select id, '
-             '       observacion, '
-             '       tipo, '
-             '       prioridad, '
-             '       completado, '
-             '       creado, '
-             '       estado_del_arte_id, '
-             '       modificado, '
-             '       tarea_id '
-             'from observacion ')
+    query = ('select o.id, '
+             '       o.observacion, '
+             '       o.tipo, '
+             '       o.prioridad, '
+             '       o.completado, '
+             '       o.creado, '
+             '       o.estado_del_arte_id, '
+             '       o.modificado, '
+             '       t.proyecto_id, '
+             '       o.tarea_id '
+             'from observacion o left join tarea t on o.tarea_id=t.id ')
 
     query += 'where '
     query = '{}{} order by creado asc'.format(query,' and '.join(filtros))
