@@ -519,7 +519,7 @@ class Observacion():
         return '{}\t{}\t{}\t{}'.format(self.id,self.prioridad,self.tarea_id,self.observacion)
 
     def formatear(self):
-        return '{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.observacion)
+        return '{}\t{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.tarea_id,self.observacion)
     
     def completa(self):
         ahora = int(time.time())
