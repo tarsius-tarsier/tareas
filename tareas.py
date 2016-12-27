@@ -553,7 +553,8 @@ class Observacion():
         self.creado             = r[5]
         self.estado_del_arte_id = r[6]
         self.modificado         = r[7]
-        self.tarea_id           = r[8]
+        self.proyecto_id        = r[8]
+        self.tarea_id           = r[9]
 
     def formatea(self):
         "formatea "

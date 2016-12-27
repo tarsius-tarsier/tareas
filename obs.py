@@ -4,7 +4,7 @@ import argparse
 
 def listar(tipo=None,completado=False,proyectos=None):
     for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos):
-        print x.formatear_todo()
+        print x.formatear()
 
 def terminar(id):
     o = tareas.Observacion(id)
