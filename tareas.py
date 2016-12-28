@@ -68,8 +68,8 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
              '       o.creado, '
              '       o.estado_del_arte_id, '
              '       o.modificado, '
-             '       t.proyecto_id, '
-             '       o.tarea_id '
+             '       o.tarea_id, '
+             '       t.proyecto_id '
              'from observacion o left join tarea t on o.tarea_id=t.id ')
 
     query += 'where '
@@ -553,8 +553,9 @@ class Observacion():
         self.creado             = r[5]
         self.estado_del_arte_id = r[6]
         self.modificado         = r[7]
-        self.proyecto_id        = r[8]
-        self.tarea_id           = r[9]
+        self.tarea_id           = r[8]
+        if len(r) > 9:
+            self.proyecto_id        = r[9]
 
     def formatea(self):
         "formatea "
