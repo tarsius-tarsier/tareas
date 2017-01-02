@@ -4,7 +4,7 @@ import tareas
 import datetime
 import time
 
-def histograma(dias=None,desde=None,hasta=None,archivo='reporte.pdt'):
+def histograma(dias=None,desde=None,hasta=None,archivo='reporte.pdf'):
     """ histograma de hh en periodo por dia """
     if hasta is None:
         hasta = datetime.datetime.today().date()
