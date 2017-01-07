@@ -46,8 +46,16 @@ if 'ruta_db' in config:
 conexion    = conexion_db(ruta_db)
 cursor      = conexion.cursor()
 
-escritorio  = os.path.join(os.path.expanduser('~'),'Desktop')
-ruta_archivos  = os.path.join(os.path.expanduser('~'),'workspace')
+ruta_archivos = None
+if 'archivados' in config:
+    ruta_archivos = config['archivados']
+else:
+    ruta_archivos  = os.path.join(os.path.expanduser('~'),'workspace')
+
+if 'activo' in config:
+    escritorio = config['activo']
+else:
+    escritorio  = os.path.join(os.path.expanduser('~'),'Desktop')
 
 CURSANDO  = 'c'
 TERMINADO = 't'
