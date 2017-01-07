@@ -114,6 +114,9 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
 
 def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None):
     query = 'select * from tarea ';
+    # de forma no las muestra en estado TERMINADO
+    if estados is None:
+        estados = [CURSANDO,NUEVO,PAUSADO]
     filtros = []
     valores = []
 
