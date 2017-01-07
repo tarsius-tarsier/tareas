@@ -5,20 +5,47 @@ import time
 import shutil
 import os
 import datetime
+import json
 from string import Template
 
-def conexion_db():
-   config= None
-   for loc in os.curdir, os.path.join(os.path.expanduser("~"),'.tareas'), "/etc/tareas", os.environ.get("TAREAS_CONF"):
+def carga_config():
+   """ carga archivo de configuracion desde archivo """
+   config = {}
+   for loc in os.curdir, os.path.join(os.path.expanduser("~"),'.tareas'), "/etc/tareas", os.environ.get("TAREAS_CONF_DIR"):
        try:
-           ruta_db = os.path.join(loc,"tareas.db")
-           if os.path.exists(ruta_db):
-               return sqlite3.connect(os.path.join(loc,"tareas.db"))
+           if loc is not None:
+               ruta_config = os.path.join(loc,"config.json")
+               if os.path.exists(ruta_config):
+                   with open(ruta_config) as f:
+                       config = json.loads(f.read())
+                       break
        except IOError:
            pass
+   return config
 
-conexion    = conexion_db()
+def conexion_db(ruta_db=None):
+    """ conexion a base  de datos """
+    if ruta_db is None:
+        for loc in os.curdir, os.path.join(os.path.expanduser("~"),'.tareas'), "/etc/tareas", os.environ.get("TAREAS_CONF_DIR"):
+            try:
+                if loc is not None:
+                    ruta_db = os.path.join(loc,"tareas.db")
+                    if os.path.exists(ruta_db):
+                        ruta_db = os.path.join(loc,"tareas.db")
+                        break
+            except IOError:
+                pass
+    return sqlite3.connect(ruta_db)
+
+config = carga_config()
+
+ruta_db = None
+if 'ruta_db' in config:
+    ruta_db = config['ruta_db']
+
+conexion    = conexion_db(ruta_db)
 cursor      = conexion.cursor()
+
 escritorio  = os.path.join(os.path.expanduser('~'),'Desktop')
 ruta_archivos  = os.path.join(os.path.expanduser('~'),'workspace')
 
