@@ -13,6 +13,10 @@ def terminar(id):
 def main():
     a = argparse.ArgumentParser()
     tipos = a.add_mutually_exclusive_group()
+    tipos.add_argument('-p', '--pasado',
+                       action='store_const',
+                       const=tareas.OBS_PASADO,
+                       help='lista observaciones pasado')
     tipos.add_argument('-n', '--normal',
                        action='store_const',
                        const=tareas.OBS_NORMAL,
@@ -41,6 +45,8 @@ def main():
         listar(tipo=p.amenazas,proyectos=p.filtroproyecto)
     elif p.todo:
         listar(tipo=p.todo,proyectos=p.filtroproyecto)
+    elif p.pasado:
+        listar(tipo=p.pasado,proyectos=p.filtroproyecto)
     elif p.normal:
         listar(tipo=p.normal,proyectos=p.filtroproyecto)
     elif p.terminar:

@@ -66,6 +66,7 @@ OBS_RIESGO  = 'r'
 OBS_TODO    = 't'
 OBS_AMENAZA = 'a'
 OBS_NORMAL  = 'o'
+OBS_PASADO  = 'p'
 
 def proyectos(imprimir=True):
     cursor.execute('select * from proyecto order by nombre')
@@ -645,7 +646,8 @@ def main():
     p.add_argument('-ot','--observaciontodo',action='store_true',help='observacion todo')
     p.add_argument('-oa','--observacionamenaza',action='store_true',help='observacion amenaza')
     p.add_argument('-oo','--observacionnormal',action='store_true',help='observacion normal')
-    p.add_argument('-op','--observacionprioridad',help='observacion prioridad')
+    p.add_argument('-op','--observacionpasado',action='store_true',help='observacion en pasado')
+    p.add_argument('-oP','--observacionprioridad',help='observacion prioridad')
     a = p.parse_args()
     if a.cerrar:
         pausar_todo()
@@ -758,6 +760,8 @@ def procesa_argumento_observacion(parser, tarea_id=None,estado_del_arte_id=None)
              tipo_obs = OBS_AMENAZA
          if parser.observacionnormal:
              tipo_obs = OBS_NORMAL
+         if parser.observacionpasado:
+             tipo_obs = OBS_PASADO
          o = Observacion()
          o.observacion=parser.observacion
          o.tarea_id = tarea_id
