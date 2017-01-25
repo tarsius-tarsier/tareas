@@ -67,6 +67,7 @@ OBS_TODO    = 't'
 OBS_AMENAZA = 'a'
 OBS_NORMAL  = 'o'
 OBS_PASADO  = 'p'
+OBS_RETRASO  = 'e'
 
 def proyectos(imprimir=True):
     cursor.execute('select * from proyecto order by nombre')
@@ -83,7 +84,7 @@ def proyectos(imprimir=True):
 
 def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None):
     filtros = ['completado=?','tipo=?']
-    valores = [completado,tipo]
+    valores = [OBS_RETRASO,completado,tipo]
     if proyectos is not None:
         filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
         valores  += proyectos
@@ -105,8 +106,10 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
              '       o.estado_del_arte_id, '
              '       o.modificado, '
              '       o.tarea_id, '
+             '       (select count(*) from observacion where observacion_id=o.id and tipo=?) as postpuesto, '
              '       t.proyecto_id '
-             'from observacion o left join tarea t on o.tarea_id=t.id ')
+             'from observacion o left join tarea t on o.tarea_id=t.id '
+             )
 
     query += 'where '
     query = '{}{} order by creado asc'.format(query,' and '.join(filtros))
@@ -551,6 +554,7 @@ class Observacion():
         self.completado  = False
         self.estado_del_arte_id = None
         self.tarea_id    = None
+        self.postpuesto  = 0
         if tupla is not None:
             self.desde_tupla(tupla)
 
@@ -558,13 +562,24 @@ class Observacion():
         return '{}\t{}\t{}\t{}'.format(self.id,self.prioridad,self.tarea_id,self.observacion)
 
     def formatear(self):
-        return '{}\t{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.tarea_id,self.observacion)
+        return '{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.tarea_id,self.postpuesto,self.observacion)
     
     def completa(self):
         ahora = int(time.time())
         query = 'update observacion set completado=?,modificado=? where id=?'
         valores = [True,ahora,self.id]
         cursor.execute(query,valores)
+        conexion.commit()
+
+    def postponer(self,motivo):
+        """postpone una tarea"""
+        ahora = int(time.time())
+        modifica = 'update observacion set modificado=? where id=?'
+        valores = [ahora,self.id]
+        cursor.execute(modifica,valores)
+        postpone = 'insert into observacion (observacion,tipo,creado,observacion_id) values (?,?,?,?) ' 
+        valores = [motivo,OBS_RETRASO,ahora,self.id]
+        cursor.execute(postpone,valores)
         conexion.commit()
 
     def plantilla(self):
@@ -593,11 +608,12 @@ class Observacion():
         self.estado_del_arte_id = r[6]
         self.modificado         = r[7]
         self.tarea_id           = r[8]
+        self.postpuesto         = r[9]
         if len(r) > 9:
-            self.proyecto_id        = r[9]
+            self.proyecto_id    = r[10]
 
     def formatea(self):
-        "formatea "
+        "formatea"
         return 'id:\t{}\ttipo:\t{}\tcom:\t{}\tobs:\t{}'.format(self.id,self.tipo,self.completado,self.obs)
 
     def crea(self):

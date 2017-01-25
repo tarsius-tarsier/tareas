@@ -49,5 +49,6 @@ CREATE TABLE observacion (
 	prioridad integer not null default 1,
 	completado boolean default false,
 	creado integer not null default (strftime('%s','now')),
-	modificado integer
+	modificado integer,
+	observacion_id integer references observacion(id)
 );

@@ -10,6 +10,10 @@ def terminar(id):
     o = tareas.Observacion(id)
     o.completa()
 
+def postponer(id,motivo):
+    o = tareas.Observacion(id)
+    o.postponer(motivo)
+
 def main():
     a = argparse.ArgumentParser()
     tipos = a.add_mutually_exclusive_group()
@@ -35,6 +39,13 @@ def main():
                        action='store_const',
                        const=tareas.OBS_TODO,
                        help='lista cosas por hacer')
+    tipos.add_argument('-P',
+                       '--postponer',
+                       type=int,
+                       help='postponer una observacion')
+    a.add_argument( '-m',
+                    '--motivo',
+                     help='motivo por el cual se postpone')
     a.add_argument('-t','--terminar',type=int,help='termina')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro proyecto')
 
@@ -51,6 +62,9 @@ def main():
         listar(tipo=p.normal,proyectos=p.filtroproyecto)
     elif p.terminar:
         terminar(p.terminar)
+    elif p.postponer:
+        if p.motivo:
+            postponer(id=p.postponer,motivo=p.motivo)
 
 if __name__ == '__main__':
     main()
