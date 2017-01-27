@@ -6,9 +6,9 @@ def listar(tipo=None,completado=False,proyectos=None):
     for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos):
         print x.formatear()
 
-def terminar(id):
+def terminar(id,comentario=None):
     o = tareas.Observacion(id)
-    o.completa()
+    o.completa(comentario)
 
 def postponer(id,motivo):
     o = tareas.Observacion(id)
@@ -46,6 +46,9 @@ def main():
     a.add_argument( '-m',
                     '--motivo',
                      help='motivo por el cual se postpone')
+    a.add_argument( '-c',
+                    '--comentario',
+                     help='comentario de termino')
     a.add_argument('-t','--terminar',type=int,help='termina')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro proyecto')
 
@@ -61,7 +64,7 @@ def main():
     elif p.normal:
         listar(tipo=p.normal,proyectos=p.filtroproyecto)
     elif p.terminar:
-        terminar(p.terminar)
+        terminar(p.terminar,p.comentario)
     elif p.postponer:
         if p.motivo:
             postponer(id=p.postponer,motivo=p.motivo)

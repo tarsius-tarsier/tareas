@@ -564,13 +564,27 @@ class Observacion():
     def formatear(self):
         return '{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.tarea_id,self.postpuesto,self.observacion)
     
-    def completa(self):
+    def completa(self,comentario=None):
         ahora = int(time.time())
         query = 'update observacion set completado=?,modificado=? where id=?'
         valores = [True,ahora,self.id]
         cursor.execute(query,valores)
         conexion.commit()
+        if comentario is not None:
+            o = Observacion()
+            o.observacion = comentario
+            o.tipo = OBS_PASADO
+            o.tarea_id  = self.obtiene_tarea_id()
+            o.crea()
 
+    def obtiene_tarea_id(self):
+        select = "select tarea_id from observacion where id=?"
+        values = [self.id]
+        cursor.execute(select,values)
+        r = cursor.fetchone()
+        if r is not None:
+            return r[0]
+        
     def postponer(self,motivo):
         """postpone una tarea"""
         ahora = int(time.time())
