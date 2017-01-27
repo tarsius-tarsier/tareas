@@ -6,13 +6,15 @@ def listar(tipo=None,completado=False,proyectos=None):
     for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos):
         print x.formatear()
 
-def terminar(id,comentario=None):
-    o = tareas.Observacion(id)
-    o.completa(comentario)
+def terminar(ids,comentario=None):
+    for id in ids:
+        o = tareas.Observacion(id)
+        o.completa(comentario)
 
-def postponer(id,motivo):
-    o = tareas.Observacion(id)
-    o.postponer(motivo)
+def postponer(ids,motivo):
+    for id in ids:
+        o = tareas.Observacion(id)
+        o.postponer(motivo)
 
 def main():
     a = argparse.ArgumentParser()
@@ -41,6 +43,7 @@ def main():
                        help='lista cosas por hacer')
     tipos.add_argument('-P',
                        '--postponer',
+                       action='append',
                        type=int,
                        help='postponer una observacion')
     a.add_argument( '-m',
@@ -49,7 +52,7 @@ def main():
     a.add_argument( '-c',
                     '--comentario',
                      help='comentario de termino')
-    a.add_argument('-t','--terminar',type=int,help='termina')
+    a.add_argument('-t','--terminar',type=int,help='termina',action='append')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro proyecto')
 
     p = a.parse_args()
@@ -64,10 +67,10 @@ def main():
     elif p.normal:
         listar(tipo=p.normal,proyectos=p.filtroproyecto)
     elif p.terminar:
-        terminar(p.terminar,p.comentario)
+        terminar(ids=p.terminar,comentario=p.comentario)
     elif p.postponer:
         if p.motivo:
-            postponer(id=p.postponer,motivo=p.motivo)
+            postponer(ids=p.postponer,motivo=p.motivo)
 
 if __name__ == '__main__':
     main()
