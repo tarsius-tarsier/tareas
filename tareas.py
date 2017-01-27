@@ -82,7 +82,9 @@ def proyectos(imprimir=True):
         proyectos.append(p)
     return proyectos
 
-def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None):
+def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None,ordenadas=None):
+    if ordenadas is None:
+        ordenadas = 'creado asc'
     filtros = ['completado=?','tipo=?']
     valores = [OBS_RETRASO,completado,tipo]
     if proyectos is not None:
@@ -112,7 +114,7 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
              )
 
     query += 'where '
-    query = '{}{} order by creado asc'.format(query,' and '.join(filtros))
+    query = '{}{} order by {}'.format(query,' and '.join(filtros),ordenadas)
     cursor.execute(query,valores)
     return [Observacion(tupla=r) for r in cursor.fetchall()]
 
@@ -576,6 +578,20 @@ class Observacion():
             o.tipo = OBS_PASADO
             o.tarea_id  = self.obtiene_tarea_id()
             o.crea()
+
+    def baja_prioridad(self):
+        """baja la prioridad de observacion"""
+        ahora = int(time.time())
+        update="update observacion set prioridad=(prioridad-1), modificado=? where id=?"
+        cursor.execute(update,[ahora,self.id])
+        conexion.commit()
+
+    def sube_prioridad(self):
+        """sube la prioridad de observacion"""
+        ahora = int(time.time())
+        update="update observacion set prioridad=(prioridad+1), modificado=? where id=?"
+        cursor.execute(update,[ahora,self.id])
+        conexion.commit()
 
     def obtiene_tarea_id(self):
         select = "select tarea_id from observacion where id=?"

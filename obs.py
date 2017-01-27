@@ -3,8 +3,18 @@ import tareas
 import argparse
 
 def listar(tipo=None,completado=False,proyectos=None):
-    for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos):
+    for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos,ordenadas='prioridad desc'):
         print x.formatear()
+
+def subir_prioridad(ids):
+    for id in ids:
+        o = tareas.Observacion(id)
+        o.sube_prioridad()
+
+def bajar_prioridad(ids):
+    for id in ids:
+        o = tareas.Observacion(id)
+        o.baja_prioridad()
 
 def terminar(ids,comentario=None):
     for id in ids:
@@ -46,6 +56,16 @@ def main():
                        action='append',
                        type=int,
                        help='postponer una observacion')
+    a.add_argument('-bp',
+                       '--bajarprioridad',
+                       action='append',
+                       type=int,
+                       help='baja la prioridad de observaciones')
+    a.add_argument('-sp',
+                       '--subirprioridad',
+                       action='append',
+                       type=int,
+                       help='sube la prioridad de observaciones')
     a.add_argument( '-m',
                     '--motivo',
                      help='motivo por el cual se postpone')
@@ -68,6 +88,10 @@ def main():
         listar(tipo=p.normal,proyectos=p.filtroproyecto)
     elif p.terminar:
         terminar(ids=p.terminar,comentario=p.comentario)
+    elif p.subirprioridad:
+        subir_prioridad(ids=p.subirprioridad)
+    elif p.bajarprioridad:
+        bajar_prioridad(ids=p.bajarprioridad)
     elif p.postponer:
         if p.motivo:
             postponer(ids=p.postponer,motivo=p.motivo)
