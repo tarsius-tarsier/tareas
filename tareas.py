@@ -336,7 +336,7 @@ class Tarea():
         return 0
 
     def iniciar(self):
-        # cambia estado a c (cursando)
+        """ cambia el estado de una tarea a cursando """
         ahora = int(time.time())
         update = 'update tarea set estado=?,iniciada=?,modificada=? where id=? and estado in (?,?,?) and estado !=?'
         cursor.execute(update,(CURSANDO,ahora,ahora,self.id,NUEVO,PAUSADO,TERMINADO,CURSANDO))
@@ -418,7 +418,7 @@ class Tarea():
             return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre)
 
 def pausar_todo():
-    lista = tareas(imprimir=False)
+    lista = tareas(imprimir=False,estados=[CURSANDO])
     for t in lista:
         t.pausar()
 
@@ -681,7 +681,7 @@ def main():
     p.add_argument('-r','--recupera', help='recupera archivos')
     p.add_argument('-E','--estimacion', type=float,help='estimacion en hh')
     p.add_argument('-f','--fechalimite', help='fecha limite en formato yyyy-mm-dd hh:mm')
-    p.add_argument('-c','--cerrar',action='store_true',help='cierra todas las tareas')
+    p.add_argument('-S','--pausatodas',action='store_true',help='pausa todas las tareas en curso')
     p.add_argument('-fe','--filtroestado',action='append',help='filtro estado')
     p.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro proyecto')
     p.add_argument('-s','--editar',help='edita tarea')
@@ -696,9 +696,7 @@ def main():
     p.add_argument('-op','--observacionpasado',action='store_true',help='observacion en pasado')
     p.add_argument('-oP','--observacionprioridad',help='observacion prioridad')
     a = p.parse_args()
-    if a.cerrar:
-        pausar_todo()
-    elif a.archiva:
+    if a.archiva:
         t = Tarea()
         t.archivar(a.archiva)
     elif a.elimina:
@@ -708,6 +706,8 @@ def main():
         t = Tarea()
         t.recuperar(a.recupera)
     elif a.iniciar:
+        if a.pausatodas:
+            pausar_todo()
         t = Tarea(a.iniciar)
         t.iniciar()
     elif a.terminar:
@@ -733,6 +733,8 @@ def main():
         t = Tarea(a.editar)
         t.editar(nombre=a.nombre,fecha_limite=a.fechalimite,estimacion=a.estimacion)
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
+    elif a.pausatodas:
+        pausar_todo()
     elif a.tareas or not a.tareas:
         tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
 
