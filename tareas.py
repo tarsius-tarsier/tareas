@@ -118,7 +118,7 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
     cursor.execute(query,valores)
     return [Observacion(tupla=r) for r in cursor.fetchall()]
 
-def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None):
+def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None,ids=None):
     query = 'select * from tarea ';
     filtros = []
     valores = []
@@ -130,6 +130,10 @@ def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None):
     if estados is not None:
         filtros  += ['estado in({})'.format(','.join('?' for x in estados))]
         valores  += estados
+
+    if ids is not None:
+        filtros  += ['id in({})'.format(','.join('?' for x in ids))]
+        valores  += ids
 
     if desde is not None:
         filtros  += ['id in(select distinct tarea_id from lapso where termino>=?)']
@@ -681,6 +685,7 @@ def main():
     p.add_argument('-S','--pausatodas',action='store_true',help='pausa todas las tareas en curso')
     p.add_argument('-fe','--filtroestado',action='append',help='filtro estado')
     p.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro proyecto')
+    p.add_argument('-ft','--filtrotarea',type=int,action='append',help='filtro tarea')
     p.add_argument('-s','--editar',help='edita tarea')
     p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
     p.add_argument('-de','--desde',help='desde')
@@ -738,7 +743,11 @@ def main():
             estados = [CURSANDO,NUEVO,PAUSADO]
         else:
             estados = a.filtroestado
-        tareas(proyectos=a.filtroproyecto,estados=estados,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
+        tareas(proyectos=a.filtroproyecto,
+               estados=estados,
+               ids=a.filtrotarea,
+               desde=alias_fechahora(a.desde),
+               hasta=alias_fechahora(a.hasta))
 
 def alias_fecha(alias,incluye_hora=False):
     fecha = None
