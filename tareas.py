@@ -120,9 +120,6 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
 
 def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None):
     query = 'select * from tarea ';
-    # de forma no las muestra en estado TERMINADO
-    if estados is None:
-        estados = [CURSANDO,NUEVO,PAUSADO]
     filtros = []
     valores = []
 
@@ -736,7 +733,10 @@ def main():
     elif a.pausatodas:
         pausar_todo()
     elif a.tareas or not a.tareas:
-        tareas(proyectos=a.filtroproyecto,estados=a.filtroestado,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
+        estados = None
+        if a.filtroestado is None:
+            estados = [CURSANDO,NUEVO,PAUSADO]
+        tareas(proyectos=a.filtroproyecto,estados=estados,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
 
 def alias_fecha(alias,incluye_hora=False):
     fecha = None
