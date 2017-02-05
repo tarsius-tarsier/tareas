@@ -736,6 +736,8 @@ def main():
         estados = None
         if a.filtroestado is None:
             estados = [CURSANDO,NUEVO,PAUSADO]
+        else:
+            estados = a.filtroestado
         tareas(proyectos=a.filtroproyecto,estados=estados,desde=alias_fechahora(a.desde),hasta=alias_fechahora(a.hasta))
 
 def alias_fecha(alias,incluye_hora=False):
