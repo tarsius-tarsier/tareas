@@ -3,8 +3,10 @@ import tareas
 import argparse
 
 def listar(tipo=None,completado=False,proyectos=None):
-    for x in tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos,ordenadas='prioridad desc'):
+    observaciones = tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos,ordenadas='prioridad desc')
+    for x in observaciones:
         print x.formatear()
+    return observaciones
 
 def subir_prioridad(ids):
     for id in ids:
@@ -60,12 +62,16 @@ def main():
                        '--bajarprioridad',
                        action='append',
                        type=int,
-                       help='baja la prioridad de observaciones')
+                       help='baja la prioridad de observacion')
     a.add_argument('-sp',
                        '--subirprioridad',
                        action='append',
                        type=int,
-                       help='sube la prioridad de observaciones')
+                       help='sube la prioridad de observacion')
+    a.add_argument('-mp',
+                       '--maximaprioridad',
+                       type=int,
+                       help='define maxima prioridad')
     a.add_argument( '-m',
                     '--motivo',
                      help='motivo por el cual se postpone')
@@ -77,11 +83,23 @@ def main():
 
     p = a.parse_args()
     if p.riesgos:
-        listar(tipo=p.riesgos,proyectos=p.filtroproyecto)
+        riesgos = listar(tipo=p.riesgos,proyectos=p.filtroproyecto)
+        if p.maximaprioridad:
+            o = tareas.Observacion(p.maximaprioridad)
+            o.maxima_prioridad(entre=[r.id for r in riesgos])
+
     elif p.amenazas:
-        listar(tipo=p.amenazas,proyectos=p.filtroproyecto)
+        amenazas = listar(tipo=p.amenazas,proyectos=p.filtroproyecto)
+        if p.maximaprioridad:
+            o = tareas.Observacion(p.maximaprioridad)
+            o.maxima_prioridad(entre=[a.id for a in amenazas])
+
     elif p.todo:
-        listar(tipo=p.todo,proyectos=p.filtroproyecto)
+        todo = listar(tipo=p.todo,proyectos=p.filtroproyecto)
+        if p.maximaprioridad:
+            o = tareas.Observacion(p.maximaprioridad)
+            o.maxima_prioridad(entre=[t.id for t in todo])
+
     elif p.pasado:
         listar(tipo=p.pasado,proyectos=p.filtroproyecto)
     elif p.normal:

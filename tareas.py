@@ -591,6 +591,16 @@ class Observacion():
         cursor.execute(update,[ahora,self.id])
         conexion.commit()
 
+    def maxima_prioridad(self,entre):
+        """define maxima prioridad en un conjunto de observaciones"""
+        ahora = int(time.time())
+        maxima_prioridad = "select (max(prioridad)+1) from observacion where id in({})".format(','.join('?' for x in entre))
+        valores = entre
+        update="update observacion set prioridad=({}), modificado=? where id=?".format(maxima_prioridad)
+        valores += [ahora,self.id]
+        cursor.execute(update,valores)
+        conexion.commit()
+
     def sube_prioridad(self):
         """sube la prioridad de observacion"""
         ahora = int(time.time())
