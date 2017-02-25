@@ -79,7 +79,8 @@ def main():
     a.add_argument( '-c',
                     '--comentario',
                      help='comentario de termino')
-    a.add_argument('-t','--terminar',type=int,help='termina',action='append')
+    a.add_argument('-t','--termina',type=int,help='termina',action='append')
+    a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto')
     a.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre observacion')
 
@@ -89,6 +90,9 @@ def main():
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[r.id for r in riesgos])
+        elif p.terminabatch:
+            for r in riesgos:
+                terminar([r.id],p.comentario)
         else:
             for r in riesgos:
                 print r.formatear()
@@ -98,6 +102,9 @@ def main():
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[a.id for a in amenazas])
+        elif p.terminabatch:
+            for a in amenazas:
+                terminar([a.id],p.comentario)
         else:
             for a in amenazas:
                 print a.formatear()
@@ -107,6 +114,9 @@ def main():
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[t.id for t in todo])
+        elif p.terminabatch:
+            for t in todo:
+                terminar([t.id],p.comentario)
         else:
             for t in todo:
                 print t.formatear()
@@ -115,20 +125,25 @@ def main():
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[p.id for p in pasadas])
+        elif p.terminabatch:
+            for pa in pasadas:
+                terminar([pa.id],p.comentario)
         else:
-            for p in pasadas:
-                print p.formatear()
+            for pa in pasadas:
+                print pa.formatear()
 
     elif p.normal:
         normales = listar(tipo=p.normal,proyectos=p.filtroproyecto,nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[n.id for n in normales])
+        elif p.terminabatch:
+            for n in normales:
+                terminar([n.id],p.comentario)
         else:
             for n in normales:
                 print n.formatear()
-
-    elif p.terminar:
+    elif p.termina:
         terminar(ids=p.terminar,comentario=p.comentario)
     elif p.subirprioridad:
         subir_prioridad(ids=p.subirprioridad)
