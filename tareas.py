@@ -82,7 +82,7 @@ def proyectos(imprimir=True):
         proyectos.append(p)
     return proyectos
 
-def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None,ordenadas=None):
+def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None,ordenadas=None,nombres=None):
     if ordenadas is None:
         ordenadas = 'creado asc'
     filtros = ['completado=?','tipo=?']
@@ -90,6 +90,10 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
     if proyectos is not None:
         filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
         valores  += proyectos
+
+    if nombres is not None:
+        filtros  += ["o.id in(select distinct id from observacion where observacion like ?)"]
+        valores  += ['%{}%'.format(n) for n in nombres]
 
     if desde is not None:
         filtros  += ['termino>=?)']
