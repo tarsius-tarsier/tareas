@@ -3,10 +3,7 @@ import tareas
 import argparse
 
 def listar(tipo=None,completado=False,proyectos=None):
-    observaciones = tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos,ordenadas='prioridad desc')
-    for x in observaciones:
-        print x.formatear()
-    return observaciones
+    return tareas.get_observaciones(tipo=tipo,completado=completado,proyectos=proyectos,ordenadas='prioridad desc')
 
 def subir_prioridad(ids):
     for id in ids:
@@ -87,23 +84,45 @@ def main():
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[r.id for r in riesgos])
+        else:
+            for r in riesgos:
+                print r.formatear()
 
     elif p.amenazas:
         amenazas = listar(tipo=p.amenazas,proyectos=p.filtroproyecto)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[a.id for a in amenazas])
+        else:
+            for a in amenazas:
+                print a.formatear()
 
     elif p.todo:
         todo = listar(tipo=p.todo,proyectos=p.filtroproyecto)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[t.id for t in todo])
-
+        else:
+            for t in todo:
+                print t.formatear()
     elif p.pasado:
-        listar(tipo=p.pasado,proyectos=p.filtroproyecto)
+        pasadas = listar(tipo=p.pasado,proyectos=p.filtroproyecto)
+        if p.maximaprioridad:
+            o = tareas.Observacion(p.maximaprioridad)
+            o.maxima_prioridad(entre=[p.id for p in pasadas])
+        else:
+            for p in pasadas:
+                print p.formatear()
+
     elif p.normal:
-        listar(tipo=p.normal,proyectos=p.filtroproyecto)
+        normales = listar(tipo=p.normal,proyectos=p.filtroproyecto)
+        if p.maximaprioridad:
+            o = tareas.Observacion(p.maximaprioridad)
+            o.maxima_prioridad(entre=[n.id for n in normales])
+        else:
+            for n in normales:
+                print n.formatear()
+
     elif p.terminar:
         terminar(ids=p.terminar,comentario=p.comentario)
     elif p.subirprioridad:
