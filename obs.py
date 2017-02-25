@@ -152,6 +152,9 @@ def main():
     elif p.postponer:
         if p.motivo:
             postponer(ids=p.postponer,motivo=p.motivo)
+    else:
+        for o in listar(proyectos=p.filtroproyecto,nombres=p.filtronombre):
+            print o.formatear()
 
 if __name__ == '__main__':
     main()
