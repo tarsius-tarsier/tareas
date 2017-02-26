@@ -82,11 +82,16 @@ def proyectos(imprimir=True):
         proyectos.append(p)
     return proyectos
 
-def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proyectos=None,ordenadas=None,nombres=None):
+def get_observaciones(tipo=None,completado=False,desde=None,hasta=None,proyectos=None,ordenadas=None,nombres=None):
     if ordenadas is None:
         ordenadas = 'creado asc'
-    filtros = ['completado=?','tipo=?']
-    valores = [OBS_RETRASO,completado,tipo]
+    filtros = ['completado=?']
+    valores = [OBS_RETRASO,completado]
+
+    if tipo is not None:
+        filtros  += ['tipo=?']
+        valores  += [tipo]
+
     if proyectos is not None:
         filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
         valores  += proyectos
@@ -122,7 +127,7 @@ def get_observaciones(tipo=OBS_TODO,completado=False,desde=None,hasta=None,proye
     cursor.execute(query,valores)
     return [Observacion(tupla=r) for r in cursor.fetchall()]
 
-def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None,ids=None,nombres=None):
+def tareas(proyectos=None,estados=None,desde=None,hasta=None,ids=None,nombres=None):
     query = 'select * from tarea ';
     filtros = []
     valores = []
@@ -157,13 +162,9 @@ def tareas(imprimir=True,proyectos=None,estados=None,desde=None,hasta=None,ids=N
     query = '{}{} order by creada asc'.format(query,' and '.join(filtros))
     cursor.execute(query, valores)
     r = cursor.fetchall()
-    if imprimir:
-        print encabezado_tarea(desde=desde,hasta=hasta)
     tareas = []
     for fila in r:
         t = Tarea(tupla=fila)
-        if imprimir:
-            print t.formatear(desde=desde,hasta=hasta)
         tareas.append(t)
     return tareas
 
@@ -716,6 +717,9 @@ def main():
     p.add_argument('-oo','--observacionnormal',action='store_true',help='observacion normal')
     p.add_argument('-op','--observacionpasado',action='store_true',help='observacion en pasado')
     p.add_argument('-oP','--observacionprioridad',help='observacion prioridad')
+    p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
+    p.add_argument('-ib','--iniciabatch',action="store_true",help='inicia en modo batch')
+    p.add_argument('-pb','--pausabatch',action="store_true",help='pausa en modo batch')
     a = p.parse_args()
     if a.archiva:
         t = Tarea()
@@ -762,12 +766,29 @@ def main():
             estados = [CURSANDO,NUEVO,PAUSADO]
         else:
             estados = a.filtroestado
-        tareas(proyectos=a.filtroproyecto,
-               estados=estados,
-               ids=a.filtrotarea,
-               nombres=a.filtronombre,
-               desde=alias_fechahora(a.desde),
-               hasta=alias_fechahora(a.hasta))
+        desde = alias_fechahora(a.desde)
+        hasta = alias_fechahora(a.hasta)
+        tt = tareas(proyectos=a.filtroproyecto,
+                        estados=estados,
+                        ids=a.filtrotarea,
+                        nombres=a.filtronombre,
+                        desde=desde,
+                        hasta=hasta)
+
+        if not a.iniciabatch and not a.terminabatch and not a.pausabatch:
+            print encabezado_tarea(desde=desde,hasta=hasta)
+        if a.iniciabatch:
+            if a.pausatodas:
+                pausar_todo()
+        for t in tt:
+            if a.iniciabatch:
+                t.iniciar()
+            elif a.terminabatch:
+                t.terminar()
+            elif a.pausabatch:
+                t.pausar()
+            else:
+                print t.formatear(desde=desde,hasta=hasta)
 
 def alias_fecha(alias,incluye_hora=False):
     fecha = None
