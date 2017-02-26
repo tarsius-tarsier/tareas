@@ -87,6 +87,7 @@ def get_observaciones(tipo=None,
                       desde=None,
                       hasta=None,
                       ids=None,
+                      e_ids=None,
                       proyectos=None,
                       ordenadas=None,
                       nombres=None):
@@ -110,6 +111,10 @@ def get_observaciones(tipo=None,
     if ids is not None:
         filtros  += ['o.id in({})'.format(','.join('?' for x in ids))]
         valores  += ids
+
+    if e_ids is not None:
+        filtros  += ['o.id not in({})'.format(','.join('?' for x in e_ids))]
+        valores  += e_ids
 
     if desde is not None:
         filtros  += ['termino>=?)']

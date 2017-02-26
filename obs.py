@@ -2,9 +2,15 @@
 import tareas
 import argparse
 
-def listar(ids=None,tipo=None,completado=False,proyectos=None,nombres=None):
+def listar(ids=None,
+           e_ids=None,
+           tipo=None,
+           completado=False,
+           proyectos=None,
+           nombres=None):
     return tareas.get_observaciones(tipo=tipo,
                                     completado=completado,
+                                    e_ids=e_ids,
                                     ids=ids,
                                     nombres=nombres,
                                     proyectos=proyectos,
@@ -85,11 +91,16 @@ def main():
     a.add_argument('-Pb','--postponebatch',action="store_true",help='postpone en modo batch')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto')
     a.add_argument('-fo','--filtroobservacion',type=int,action='append',help='filtro id observacion')
+    a.add_argument('-eo','--exceptoobservacion',type=int,action='append',help='excepto id observacion')
     a.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre observacion')
 
     p = a.parse_args()
     if p.riesgos:
-        riesgos = listar(ids=p.filtroobservacion,tipo=p.riesgos,proyectos=p.filtroproyecto,nombres=p.filtronombre)
+        riesgos = listar(e_ids=p.exceptoobservacion,
+                         ids=p.filtroobservacion,
+                         tipo=p.riesgos,
+                         proyectos=p.filtroproyecto,
+                         nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[r.id for r in riesgos])
@@ -101,7 +112,11 @@ def main():
                 print r.formatear()
 
     elif p.amenazas:
-        amenazas = listar(ids=p.filtroobservacion,tipo=p.amenazas,proyectos=p.filtroproyecto,nombres=p.filtronombre)
+        amenazas = listar(e_ids=p.exceptoobservacion,
+                          ids=p.filtroobservacion,
+                          tipo=p.amenazas,
+                          proyectos=p.filtroproyecto,
+                          nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[a.id for a in amenazas])
@@ -113,7 +128,11 @@ def main():
                 print a.formatear()
 
     elif p.todo:
-        todo = listar(ids=p.filtroobservacion,tipo=p.todo,proyectos=p.filtroproyecto,nombres=p.filtronombre)
+        todo = listar(e_ids=p.exceptoobservacion,
+                      ids=p.filtroobservacion,
+                      tipo=p.todo,
+                      proyectos=p.filtroproyecto,
+                      nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[t.id for t in todo])
@@ -128,7 +147,11 @@ def main():
             for t in todo:
                 print t.formatear()
     elif p.pasado:
-        pasadas = listar(ids=p.filtroobservacion,tipo=p.pasado,proyectos=p.filtroproyecto,nombres=p.filtronombre)
+        pasadas = listar(e_ids=p.exceptoobservacion,
+                         ids=p.filtroobservacion,
+                         tipo=p.pasado,
+                         proyectos=p.filtroproyecto,
+                         nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[p.id for p in pasadas])
@@ -140,7 +163,11 @@ def main():
                 print pa.formatear()
 
     elif p.normal:
-        normales = listar(ids=p.filtroobservacion,tipo=p.normal,proyectos=p.filtroproyecto,nombres=p.filtronombre)
+        normales = listar(e_ids=e.exceptoobservacion,
+                          ids=p.filtroobservacion,
+                          tipo=p.normal,
+                          proyectos=p.filtroproyecto,
+                          nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[n.id for n in normales])
@@ -160,7 +187,10 @@ def main():
         if p.motivo:
             postponer(ids=p.postponer,motivo=p.motivo)
     else:
-        for o in listar(ids=p.filtroobservacion,proyectos=p.filtroproyecto,nombres=p.filtronombre):
+        for o in listar(e_ids=p.exceptoobservacion,
+                        ids=p.filtroobservacion,
+                        proyectos=p.filtroproyecto,
+                        nombres=p.filtronombre):
             print o.formatear()
 
 if __name__ == '__main__':
