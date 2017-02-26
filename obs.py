@@ -81,6 +81,7 @@ def main():
                      help='comentario de termino')
     a.add_argument('-t','--termina',type=int,help='termina',action='append')
     a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
+    a.add_argument('-Pb','--postponebatch',action="store_true",help='postpone en modo batch')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto')
     a.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre observacion')
 
@@ -117,6 +118,10 @@ def main():
         elif p.terminabatch:
             for t in todo:
                 terminar([t.id],p.comentario)
+        elif p.postponebatch:
+            if p.motivo:
+                for t in todo:
+                    postponer([t.id],motivo=p.motivo)
         else:
             for t in todo:
                 print t.formatear()
