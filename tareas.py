@@ -127,7 +127,7 @@ def get_observaciones(tipo=None,completado=False,desde=None,hasta=None,proyectos
     cursor.execute(query,valores)
     return [Observacion(tupla=r) for r in cursor.fetchall()]
 
-def tareas(proyectos=None,estados=None,desde=None,hasta=None,ids=None,nombres=None):
+def tareas(proyectos_nombre=None,proyectos=None,estados=None,desde=None,hasta=None,ids=None,nombres=None):
     query = 'select * from tarea ';
     filtros = []
     valores = []
@@ -135,6 +135,10 @@ def tareas(proyectos=None,estados=None,desde=None,hasta=None,ids=None,nombres=No
     if proyectos is not None:
         filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
         valores  += proyectos
+
+    if proyectos_nombre is not None:
+        filtros  += ["proyecto_id in(select distinct id from proyecto where {} )".format(' or '.join('nombre like ? ' for x in proyectos_nombre))]
+        valores  += ['%{}%'.format(n) for n in proyectos_nombre]
 
     if estados is not None:
         filtros  += ['estado in({})'.format(','.join('?' for x in estados))]
@@ -149,7 +153,7 @@ def tareas(proyectos=None,estados=None,desde=None,hasta=None,ids=None,nombres=No
         valores  += [desde]
 
     if nombres is not None:
-        filtros  += ["id in(select distinct id from tarea where nombre like ?)"]
+        filtros  += ["id in(select distinct id from tarea where {} )".format(' or '.join('nombre like ? ' for x in nombres))]
         valores  += ['%{}%'.format(n) for n in nombres]
 
     if hasta is not None:
@@ -704,6 +708,7 @@ def main():
     p.add_argument('-S','--pausatodas',action='store_true',help='pausa todas las tareas en curso')
     p.add_argument('-fe','--filtroestado',action='append',help='filtro estado de tarea')
     p.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto de tarea')
+    p.add_argument('-fpn','--filtroproyectonombre',action='append',help='filtro nombre proyecto de tarea')
     p.add_argument('-ft','--filtrotarea',type=int,action='append',help='filtro id tarea')
     p.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre tarea')
     p.add_argument('-s','--editar',help='edita tarea')
@@ -771,6 +776,7 @@ def main():
         tt = tareas(proyectos=a.filtroproyecto,
                         estados=estados,
                         ids=a.filtrotarea,
+                        proyectos_nombre=a.filtroproyectonombre,
                         nombres=a.filtronombre,
                         desde=desde,
                         hasta=hasta)
