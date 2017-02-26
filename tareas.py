@@ -775,7 +775,7 @@ def main():
                         desde=desde,
                         hasta=hasta)
 
-        if not a.iniciabatch and not a.terminabatch and not a.pausabatch:
+        if not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
             print encabezado_tarea(desde=desde,hasta=hasta)
         if a.iniciabatch:
             if a.pausatodas:
