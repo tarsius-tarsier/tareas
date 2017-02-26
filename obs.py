@@ -7,6 +7,7 @@ def listar(ids=None,
            tipo=None,
            completado=False,
            proyectos=None,
+           proyectos_nombre=None,
            nombres=None):
     return tareas.get_observaciones(tipo=tipo,
                                     completado=completado,
@@ -14,6 +15,7 @@ def listar(ids=None,
                                     ids=ids,
                                     nombres=nombres,
                                     proyectos=proyectos,
+                                    proyectos_nombre=proyectos_nombre,
                                     ordenadas='prioridad desc')
 
 def subir_prioridad(ids):
@@ -90,6 +92,7 @@ def main():
     a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     a.add_argument('-Pb','--postponebatch',action="store_true",help='postpone en modo batch')
     a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto')
+    a.add_argument('-fpn','--filtronombreproyecto',action='append',help='filtro nombre proyecto')
     a.add_argument('-fo','--filtroobservacion',type=int,action='append',help='filtro id observacion')
     a.add_argument('-eo','--exceptoobservacion',type=int,action='append',help='excepto id observacion')
     a.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre observacion')
@@ -100,6 +103,7 @@ def main():
                          ids=p.filtroobservacion,
                          tipo=p.riesgos,
                          proyectos=p.filtroproyecto,
+                         proyectos_nombre=p.filtronombreproyecto,
                          nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
@@ -116,6 +120,7 @@ def main():
                           ids=p.filtroobservacion,
                           tipo=p.amenazas,
                           proyectos=p.filtroproyecto,
+                          proyectos_nombre=p.filtronombreproyecto,
                           nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
@@ -132,6 +137,7 @@ def main():
                       ids=p.filtroobservacion,
                       tipo=p.todo,
                       proyectos=p.filtroproyecto,
+                      proyectos_nombre=p.filtronombreproyecto,
                       nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
@@ -151,6 +157,7 @@ def main():
                          ids=p.filtroobservacion,
                          tipo=p.pasado,
                          proyectos=p.filtroproyecto,
+                         proyectos_nombre=p.filtronombreproyecto,
                          nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
@@ -167,6 +174,7 @@ def main():
                           ids=p.filtroobservacion,
                           tipo=p.normal,
                           proyectos=p.filtroproyecto,
+                          proyectos_nombre=p.filtronombreproyecto,
                           nombres=p.filtronombre)
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
@@ -190,6 +198,7 @@ def main():
         for o in listar(e_ids=p.exceptoobservacion,
                         ids=p.filtroobservacion,
                         proyectos=p.filtroproyecto,
+                        proyectos_nombre=p.filtronombreproyecto,
                         nombres=p.filtronombre):
             print o.formatear()
 
