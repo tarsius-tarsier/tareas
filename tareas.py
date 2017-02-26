@@ -110,7 +110,7 @@ def get_observaciones(tipo=None,
         valores  += ['%{}%'.format(n) for n in proyectos_nombre]
 
     if nombres is not None:
-        filtros  += ["o.id in(select distinct id from observacion where observacion like ?)"]
+        filtros  += ["o.id in(select distinct id from observacion where {} )".format(' or '.join('observacion like ? ' for x in nombres))]
         valores  += ['%{}%'.format(n) for n in nombres]
 
     if ids is not None:
