@@ -453,7 +453,7 @@ class Tarea():
             return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre)
 
 def pausar_todo():
-    lista = tareas(imprimir=False,estados=[CURSANDO])
+    lista = tareas(estados=[CURSANDO])
     for t in lista:
         t.pausar()
 
