@@ -712,40 +712,42 @@ class Observacion():
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('-P','--proyectos', action='store_true',help='lista de proyectos')
-    p.add_argument('-i','--iniciar', help='inicia una tarea')
-    p.add_argument('-t','--terminar',help='termina una tarea')
-    p.add_argument('-v','--ver',help='ver tarea')
-    p.add_argument('-l','--tareas',action='store_true',help='listar tareas')
-    p.add_argument('-p','--pausar',  help='pausa una tarea')
-    p.add_argument('-e','--elimina',  help='elimina una tarea')
-    p.add_argument('-a','--agrega',  help='agrega una tarea')
-    p.add_argument('-pid','--proyecto',  help='id de proyecto')
-    p.add_argument('-hh','--horashombre',  help='horas hombre')
     p.add_argument('-A','--archiva', help='archiva escritorio')
-    p.add_argument('-r','--recupera', help='recupera archivos')
     p.add_argument('-E','--estimacion', type=float,help='estimacion en hh')
-    p.add_argument('-f','--fechalimite', help='fecha limite en formato yyyy-mm-dd hh:mm')
+    p.add_argument('-P','--proyectos', action='store_true',help='lista de proyectos')
     p.add_argument('-S','--pausatodas',action='store_true',help='pausa todas las tareas en curso')
+    p.add_argument('-a','--agrega',  help='agrega una tarea')
+    p.add_argument('-de','--desde',help='desde')
+    p.add_argument('-e','--elimina',  help='elimina una tarea')
+    p.add_argument('-f','--fechalimite', help='fecha limite en formato yyyy-mm-dd hh:mm')
     p.add_argument('-fe','--filtroestado',action='append',help='filtro estado de tarea')
+    p.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre tarea')
     p.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto de tarea')
     p.add_argument('-fpn','--filtroproyectonombre',action='append',help='filtro nombre proyecto de tarea')
     p.add_argument('-ft','--filtrotarea',type=int,action='append',help='filtro id tarea')
-    p.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre tarea')
-    p.add_argument('-s','--editar',help='edita tarea')
-    p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
-    p.add_argument('-de','--desde',help='desde')
     p.add_argument('-ha','--hasta',help='hasta')
+    p.add_argument('-hh','--horashombre',  help='horas hombre')
+    p.add_argument('-i','--iniciar', help='inicia una tarea')
+    p.add_argument('-ib','--iniciabatch',action="store_true",help='inicia en modo batch')
+    p.add_argument('-l','--tareas',action='store_true',help='listar tareas')
+    p.add_argument('-m','--muestra', help='muestra tarea despues de ejecutar operacion')
+    p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
     p.add_argument('-o','--observacion',help='observacion')
-    p.add_argument('-or','--observacionriesgo',action='store_true',help='observacion de riesgo')
-    p.add_argument('-ot','--observaciontodo',action='store_true',help='observacion todo')
+    p.add_argument('-oP','--observacionprioridad',help='observacion prioridad')
     p.add_argument('-oa','--observacionamenaza',action='store_true',help='observacion amenaza')
     p.add_argument('-oo','--observacionnormal',action='store_true',help='observacion normal')
     p.add_argument('-op','--observacionpasado',action='store_true',help='observacion en pasado')
-    p.add_argument('-oP','--observacionprioridad',help='observacion prioridad')
-    p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
-    p.add_argument('-ib','--iniciabatch',action="store_true",help='inicia en modo batch')
+    p.add_argument('-or','--observacionriesgo',action='store_true',help='observacion de riesgo')
+    p.add_argument('-ot','--observaciontodo',action='store_true',help='observacion todo')
+    p.add_argument('-p','--pausar',  help='pausa una tarea')
     p.add_argument('-pb','--pausabatch',action="store_true",help='pausa en modo batch')
+    p.add_argument('-pid','--proyecto',  help='id de proyecto')
+    p.add_argument('-r','--recupera', help='recupera archivos')
+    p.add_argument('-s','--editar',help='edita tarea')
+    p.add_argument('-sb','--sumahhpbatch',action="store_true",help='termina en modo batch')
+    p.add_argument('-t','--terminar',help='termina una tarea')
+    p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
+    p.add_argument('-v','--ver',help='ver tarea')
     a = p.parse_args()
     if a.archiva:
         t = Tarea()
@@ -778,11 +780,14 @@ def main():
     elif a.agrega:
         t = Tarea(nombre=a.agrega,proyecto=a.proyecto,estimacion=a.estimacion,fecha_limite=a.fechalimite)
         t.guardar()
-        print t.formatear()
+        if a.muestra:
+            print t.formatear()
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
     elif a.editar:
         t = Tarea(a.editar)
         t.editar(nombre=a.nombre,fecha_limite=a.fechalimite,estimacion=a.estimacion)
+        if a.muestra:
+            print t.formatear()
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
     elif a.pausatodas:
         pausar_todo()
@@ -802,20 +807,30 @@ def main():
                         desde=desde,
                         hasta=hasta)
 
-        if not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
+        if not a.sumahhpbatch and not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
             print encabezado_tarea(desde=desde,hasta=hasta)
-        if a.iniciabatch:
-            if a.pausatodas:
-                pausar_todo()
+        if a.sumahhpbatch:
+            suma = 0
         for t in tt:
-            if a.iniciabatch:
+            if a.sumahhpbatch:
+                suma = suma + t.hh(desde=desde,hasta=hasta)
+            elif a.iniciabatch:
                 t.iniciar()
+                if a.muestra:
+                    print t.formatear()
             elif a.terminabatch:
                 t.terminar()
+                if a.muestra:
+                    print t.formatear()
             elif a.pausabatch:
                 t.pausar()
+                if a.muestra:
+                    print t.formatear()
             else:
                 print t.formatear(desde=desde,hasta=hasta)
+
+        if a.sumahhpbatch:
+            print suma
 
 def alias_fecha(alias,incluye_hora=False):
     fecha = None
