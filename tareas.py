@@ -730,7 +730,7 @@ def main():
     p.add_argument('-i','--iniciar', help='inicia una tarea')
     p.add_argument('-ib','--iniciabatch',action="store_true",help='inicia en modo batch')
     p.add_argument('-l','--tareas',action='store_true',help='listar tareas')
-    p.add_argument('-m','--muestra', help='muestra tarea despues de ejecutar operacion')
+    p.add_argument('-m','--muestra', action='store_true', help='muestra tarea despues de ejecutar operacion')
     p.add_argument('-n','--nombre',help='nuevo nombre de tarea')
     p.add_argument('-o','--observacion',help='observacion')
     p.add_argument('-oP','--observacionprioridad',help='observacion prioridad')
