@@ -788,7 +788,9 @@ def main():
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
     elif a.editar:
         t = Tarea(a.editar)
-        t.editar(nombre=a.nombre,fecha_limite=a.fechalimite,estimacion=a.estimacion)
+        t.editar(nombre=a.nombre,
+                 fecha_limite=a.fechalimite,
+                 estimacion=a.estimacion)
         if a.muestra:
             print t.formatear()
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
@@ -901,19 +903,20 @@ def procesa_argumento_observacion(parser, tarea_id=None,estado_del_arte_id=None)
          tipo_obs = None
          if parser.observacionriesgo:
              tipo_obs = OBS_RIESGO
-         if parser.observaciontodo:
+         elif parser.observaciontodo:
              tipo_obs = OBS_TODO
-         if parser.observacionamenaza:
+         elif parser.observacionamenaza:
              tipo_obs = OBS_AMENAZA
-         if parser.observacionnormal:
+         elif parser.observacionnormal:
              tipo_obs = OBS_NORMAL
-         if parser.observacionpasado:
+         elif parser.observacionpasado:
              tipo_obs = OBS_PASADO
-         o = Observacion()
-         o.observacion=parser.observacion
-         o.tarea_id = tarea_id
-         o.tipo = tipo_obs
-         o.crea()
+         if tipo_obs is not None:
+            o = Observacion()
+            o.observacion=parser.observacion
+            o.tarea_id = tarea_id
+            o.tipo = tipo_obs
+            o.crea()
 
 if __name__ == '__main__':
     main()
