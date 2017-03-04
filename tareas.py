@@ -383,7 +383,7 @@ class Tarea():
             lapso  = 'insert into lapso (tarea_id,inicio,creado) values(?,?,?)'
             cursor.execute(lapso,(self.id,ahora,ahora))
             conexion.commit()
-            self.estado = CURSANDO
+            self.desde_db(self.id)
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
@@ -399,7 +399,7 @@ class Tarea():
             lapso  = 'update lapso set modificado=?,termino=? where termino is null and tarea_id=?'
             cursor.execute(lapso,(ahora,ahora,self.id))
             conexion.commit()
-            self.estado = TERMINADO
+            self.desde_db(self.id)
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
@@ -416,7 +416,7 @@ class Tarea():
             lapso  = 'update lapso set modificado=?,termino=? where termino is null and tarea_id=? '
             cursor.execute(lapso,(ahora,ahora,self.id))
             conexion.commit()
-            self.estado = PAUSADO
+            self.desde_db(self.id)
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
@@ -810,10 +810,7 @@ def main():
                         desde=desde,
                         hasta=hasta)
 
-        if not a.sumahhpbatch and
-           not a.iniciabatch  and
-           not a.terminabatch and
-           not a.pausabatch   and len(tt):
+        if not a.sumahhpbatch and not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
             print encabezado_tarea(desde=desde,hasta=hasta)
         if a.sumahhpbatch:
             suma = 0
