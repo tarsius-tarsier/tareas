@@ -186,7 +186,7 @@ def main():
             for n in normales:
                 print n.formatear()
     elif p.termina:
-        terminar(ids=p.terminar,comentario=p.comentario)
+        terminar(ids=p.termina,comentario=p.comentario)
     elif p.subirprioridad:
         subir_prioridad(ids=p.subirprioridad)
     elif p.bajarprioridad:
