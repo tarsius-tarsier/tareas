@@ -752,6 +752,8 @@ def main():
     p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     p.add_argument('-v','--ver',help='ver tarea')
     a = p.parse_args()
+    if a.pausatodas:
+        pausar_todo()
     if a.archiva:
         t = Tarea()
         t.archivar(a.archiva)
@@ -762,8 +764,6 @@ def main():
         t = Tarea()
         t.recuperar(a.recupera)
     elif a.iniciar:
-        if a.pausatodas:
-            pausar_todo()
         t = Tarea(a.iniciar)
         t.iniciar()
     elif a.terminar:
@@ -792,8 +792,6 @@ def main():
         if a.muestra:
             print t.formatear()
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
-    elif a.pausatodas:
-        pausar_todo()
     elif a.tareas or not a.tareas:
         estados = None
         if a.filtroestado is None:
@@ -810,7 +808,10 @@ def main():
                         desde=desde,
                         hasta=hasta)
 
-        if not a.sumahhpbatch and not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
+        if not a.sumahhpbatch and
+           not a.iniciabatch  and
+           not a.terminabatch and
+           not a.pausabatch   and len(tt):
             print encabezado_tarea(desde=desde,hasta=hasta)
         if a.sumahhpbatch:
             suma = 0
