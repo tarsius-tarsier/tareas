@@ -383,6 +383,7 @@ class Tarea():
             lapso  = 'insert into lapso (tarea_id,inicio,creado) values(?,?,?)'
             cursor.execute(lapso,(self.id,ahora,ahora))
             conexion.commit()
+            self.estado = CURSANDO
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
@@ -398,6 +399,7 @@ class Tarea():
             lapso  = 'update lapso set modificado=?,termino=? where termino is null and tarea_id=?'
             cursor.execute(lapso,(ahora,ahora,self.id))
             conexion.commit()
+            self.estado = TERMINADO
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
@@ -414,6 +416,7 @@ class Tarea():
             lapso  = 'update lapso set modificado=?,termino=? where termino is null and tarea_id=? '
             cursor.execute(lapso,(ahora,ahora,self.id))
             conexion.commit()
+            self.estado = PAUSADO
         else:
             print 'id:{}\tsin cambios'.format(self.id)
 
