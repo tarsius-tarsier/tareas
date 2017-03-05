@@ -5,14 +5,14 @@ import argparse
 def listar(ids=None,
            e_ids=None,
            tipo=None,
-           completado=False,
+           completada=False,
            tareas_id=None,
            tareas_nombre=None,
            proyectos=None,
            proyectos_nombre=None,
            nombres=None):
     return tareas.get_observaciones(tipo=tipo,
-                                    completado=completado,
+                                    completado=completada,
                                     e_ids=e_ids,
                                     ids=ids,
                                     nombres=nombres,
@@ -96,6 +96,10 @@ def main():
     a.add_argument( '-c',
                     '--comentario',
                      help='comentario de termino')
+    a.add_argument( '-C',
+                    '--completada',
+                    action='store_true',
+                    help='muestra las tareas completadas')
     a.add_argument('-Pb','--postponebatch',action="store_true",help='postpone en modo batch')
     a.add_argument('-eo','--exceptoobservacion',type=int,action='append',help='excepto id observacion')
     a.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre observacion')
@@ -111,6 +115,7 @@ def main():
     if p.riesgos:
         riesgos = listar(e_ids=p.exceptoobservacion,
                          ids=p.filtroobservacion,
+                         completada=p.completada,
                          tipo=p.riesgos,
                          tareas_id=p.filtrotarea,
                          tareas_nombre=p.filtronombretarea,
@@ -133,6 +138,7 @@ def main():
     elif p.amenazas:
         amenazas = listar(e_ids=p.exceptoobservacion,
                           ids=p.filtroobservacion,
+                          completada=p.completada,
                           tipo=p.amenazas,
                           tareas_nombre=p.filtronombretarea,
                           tareas_id=p.filtrotarea,
@@ -155,6 +161,7 @@ def main():
     elif p.todo:
         todo = listar(e_ids=p.exceptoobservacion,
                       ids=p.filtroobservacion,
+                      completada=p.completada,
                       tipo=p.todo,
                       tareas_nombre=p.filtronombretarea,
                       tareas_id=p.filtrotarea,
@@ -182,6 +189,7 @@ def main():
                          ids=p.filtroobservacion,
                          tipo=p.pasado,
                          tareas_nombre=p.filtronombretarea,
+                         completada=p.completada,
                          tareas_id=p.filtrotarea,
                          proyectos=p.filtroproyecto,
                          proyectos_nombre=p.filtronombreproyecto,
@@ -204,6 +212,7 @@ def main():
                           ids=p.filtroobservacion,
                           tipo=p.normal,
                           tareas_nombre=p.filtronombretarea,
+                          completada=p.completada,
                           tareas_id=p.filtrotarea,
                           proyectos=p.filtroproyecto,
                           proyectos_nombre=p.filtronombreproyecto,
@@ -234,6 +243,7 @@ def main():
                         ids=p.filtroobservacion,
                         tareas_nombre=p.filtronombretarea,
                         tareas_id=p.filtrotarea,
+                        completada=p.completada,
                         proyectos=p.filtroproyecto,
                         proyectos_nombre=p.filtronombreproyecto,
                         nombres=p.filtronombre)
