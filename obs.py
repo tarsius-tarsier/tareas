@@ -6,6 +6,8 @@ def listar(ids=None,
            e_ids=None,
            tipo=None,
            completado=False,
+           tareas_id=None,
+           tareas_nombre=None,
            proyectos=None,
            proyectos_nombre=None,
            nombres=None):
@@ -14,6 +16,8 @@ def listar(ids=None,
                                     e_ids=e_ids,
                                     ids=ids,
                                     nombres=nombres,
+                                    tareas_id=tareas_id,
+                                    tareas_nombre=tareas_nombre,
                                     proyectos=proyectos,
                                     proyectos_nombre=proyectos_nombre,
                                     ordenadas='prioridad desc')
@@ -88,20 +92,24 @@ def main():
     a.add_argument( '-c',
                     '--comentario',
                      help='comentario de termino')
-    a.add_argument('-t','--termina',type=int,help='termina',action='append')
-    a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     a.add_argument('-Pb','--postponebatch',action="store_true",help='postpone en modo batch')
-    a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto')
-    a.add_argument('-fpn','--filtronombreproyecto',action='append',help='filtro nombre proyecto')
-    a.add_argument('-fo','--filtroobservacion',type=int,action='append',help='filtro id observacion')
     a.add_argument('-eo','--exceptoobservacion',type=int,action='append',help='excepto id observacion')
     a.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre observacion')
+    a.add_argument('-fo','--filtroobservacion',type=int,action='append',help='filtro id observacion')
+    a.add_argument('-fp','--filtroproyecto',type=int,action='append',help='filtro id proyecto')
+    a.add_argument('-fpn','--filtronombreproyecto',action='append',help='filtro nombre proyecto')
+    a.add_argument('-ft','--filtrotarea',type=str,action='append',help='filtro nombre observacion')
+    a.add_argument('-ftn','--filtronombretarea',action='append',help='filtro nombre tarea')
+    a.add_argument('-t','--termina',type=int,help='termina',action='append')
+    a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
 
     p = a.parse_args()
     if p.riesgos:
         riesgos = listar(e_ids=p.exceptoobservacion,
                          ids=p.filtroobservacion,
                          tipo=p.riesgos,
+                         tareas_id=p.filtrotarea,
+                         tareas_nombre=p.filtronombretarea,
                          proyectos=p.filtroproyecto,
                          proyectos_nombre=p.filtronombreproyecto,
                          nombres=p.filtronombre)
@@ -119,6 +127,8 @@ def main():
         amenazas = listar(e_ids=p.exceptoobservacion,
                           ids=p.filtroobservacion,
                           tipo=p.amenazas,
+                          tareas_nombre=p.filtronombretarea,
+                          tareas_id=p.filtrotarea,
                           proyectos=p.filtroproyecto,
                           proyectos_nombre=p.filtronombreproyecto,
                           nombres=p.filtronombre)
@@ -136,6 +146,8 @@ def main():
         todo = listar(e_ids=p.exceptoobservacion,
                       ids=p.filtroobservacion,
                       tipo=p.todo,
+                      tareas_nombre=p.filtronombretarea,
+                      tareas_id=p.filtrotarea,
                       proyectos=p.filtroproyecto,
                       proyectos_nombre=p.filtronombreproyecto,
                       nombres=p.filtronombre)
@@ -156,6 +168,8 @@ def main():
         pasadas = listar(e_ids=p.exceptoobservacion,
                          ids=p.filtroobservacion,
                          tipo=p.pasado,
+                         tareas_nombre=p.filtronombretarea,
+                         tareas_id=p.filtrotarea,
                          proyectos=p.filtroproyecto,
                          proyectos_nombre=p.filtronombreproyecto,
                          nombres=p.filtronombre)
@@ -173,6 +187,8 @@ def main():
         normales = listar(e_ids=e.exceptoobservacion,
                           ids=p.filtroobservacion,
                           tipo=p.normal,
+                          tareas_nombre=p.filtronombretarea,
+                          tareas_id=p.filtrotarea,
                           proyectos=p.filtroproyecto,
                           proyectos_nombre=p.filtronombreproyecto,
                           nombres=p.filtronombre)
@@ -197,6 +213,8 @@ def main():
     else:
         for o in listar(e_ids=p.exceptoobservacion,
                         ids=p.filtroobservacion,
+                        tareas_nombre=p.filtronombretarea,
+                        tareas_id=p.filtrotarea,
                         proyectos=p.filtroproyecto,
                         proyectos_nombre=p.filtronombreproyecto,
                         nombres=p.filtronombre):

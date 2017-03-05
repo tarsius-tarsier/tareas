@@ -88,6 +88,8 @@ def get_observaciones(tipo=None,
                       hasta=None,
                       ids=None,
                       e_ids=None,
+                      tareas_id=None,
+                      tareas_nombre=None,
                       proyectos=None,
                       proyectos_nombre=None,
                       ordenadas=None,
@@ -104,6 +106,14 @@ def get_observaciones(tipo=None,
     if proyectos is not None:
         filtros  += ['proyecto_id in({})'.format(','.join('?' for x in proyectos))]
         valores  += proyectos
+
+    if tareas_id is not None:
+        filtros  += ['o.tarea_id in({})'.format(','.join('?' for x in tareas_id))]
+        valores  += tareas_id
+
+    if tareas_nombre is not None:
+        filtros  += ["o.tarea_id in(select distinct id from tarea where {} )".format(' or '.join('nombre like ? ' for x in tareas_nombre))]
+        valores  += ['%{}%'.format(n) for n in tareas_nombre]
 
     if proyectos_nombre is not None:
         filtros  += ["proyecto_id in(select distinct id from proyecto where {} )".format(' or '.join('nombre like ? ' for x in proyectos_nombre))]
