@@ -252,11 +252,11 @@ class Tarea():
             o = Observacion(tupla=r)
             self.observaciones += [o]
 
-    def eliminar(self,id):
-        cursor.execute("delete from log where tarea_id=?",(id, ))
-        cursor.execute("delete from lapso where tarea_id=?",(id, ))
-        cursor.execute("delete from observacion where tarea_id=?", (id, ))
-        cursor.execute("delete from tarea where id=?", (id, ))
+    def eliminar(self):
+        cursor.execute("delete from log where tarea_id=?",(self.id, ))
+        cursor.execute("delete from lapso where tarea_id=?",(self.id, ))
+        cursor.execute("delete from observacion where tarea_id=?", (self.id, ))
+        cursor.execute("delete from tarea where id=?", (self.id, ))
         conexion.commit()
 
     def editar(self,nombre=None,fecha_limite=None,estimacion=None):
@@ -384,8 +384,6 @@ class Tarea():
             cursor.execute(lapso,(self.id,ahora,ahora))
             conexion.commit()
             self.desde_db(self.id)
-        else:
-            print 'id:{}\tsin cambios'.format(self.id)
 
     def terminar(self):
         ahora = int(time.time())
@@ -400,8 +398,6 @@ class Tarea():
             cursor.execute(lapso,(ahora,ahora,self.id))
             conexion.commit()
             self.desde_db(self.id)
-        else:
-            print 'id:{}\tsin cambios'.format(self.id)
 
     def pausar(self):
         # cambia estado a p (pausado)
@@ -417,8 +413,6 @@ class Tarea():
             cursor.execute(lapso,(ahora,ahora,self.id))
             conexion.commit()
             self.desde_db(self.id)
-        else:
-            print 'id:{}\tsin cambios'.format(self.id)
 
     def formatear(self,detalle=False,desde=None,hasta=None):
         if self.id is None:
@@ -722,6 +716,7 @@ def main():
     p.add_argument('-a','--agrega',  help='agrega una tarea')
     p.add_argument('-de','--desde',help='desde')
     p.add_argument('-e','--elimina',  help='elimina una tarea')
+    p.add_argument('-eb','--eliminabatch',action="store_true",help='elimina en modo batch')
     p.add_argument('-f','--fechalimite', help='fecha limite en formato yyyy-mm-dd hh:mm')
     p.add_argument('-fe','--filtroestado',action='append',help='filtro estado de tarea')
     p.add_argument('-fn','--filtronombre',type=str,action='append',help='filtro nombre tarea')
@@ -758,8 +753,8 @@ def main():
         t = Tarea()
         t.archivar(a.archiva)
     elif a.elimina:
-        t = Tarea()
-        t.eliminar(a.elimina)
+        t = Tarea(id=a.elimina)
+        t.eliminar()
     elif a.recupera:
         t = Tarea()
         t.recuperar(a.recupera)
@@ -810,7 +805,7 @@ def main():
                         desde=desde,
                         hasta=hasta)
 
-        if not a.sumahhpbatch and not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
+        if not a.eliminabatch and not a.sumahhpbatch and not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
             print encabezado_tarea(desde=desde,hasta=hasta)
         if a.sumahhpbatch:
             suma = 0
@@ -821,6 +816,8 @@ def main():
                 t.iniciar()
                 if a.muestra:
                     print t.formatear()
+            elif a.eliminabatch:
+                t.eliminar()
             elif a.terminabatch:
                 t.terminar()
                 if a.muestra:
