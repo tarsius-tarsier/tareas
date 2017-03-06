@@ -459,11 +459,6 @@ class Tarea():
         else:
             return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre)
 
-def pausar_todo():
-    lista = tareas(estados=[CURSANDO])
-    for t in lista:
-        t.pausar()
-
 def encabezado_proyecto():
     return 'id\tnombre'
 
@@ -732,7 +727,7 @@ def main():
     p.add_argument('-A','--archiva', help='archiva escritorio')
     p.add_argument('-E','--estimacion', type=float,help='estimacion en hh')
     p.add_argument('-P','--proyectos', action='store_true',help='lista de proyectos')
-    p.add_argument('-S','--pausatodas',action='store_true',help='pausa todas las tareas en curso')
+    p.add_argument('-S','--pausacursando',action='store_true',help='pausa todas las tareas en curso')
     p.add_argument('-a','--agrega',  help='agrega una tarea')
     p.add_argument('-de','--desde',help='desde')
     p.add_argument('-e','--elimina',  help='elimina una tarea')
@@ -767,8 +762,6 @@ def main():
     p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     p.add_argument('-v','--ver',help='ver tarea')
     a = p.parse_args()
-    if a.pausatodas:
-        pausar_todo()
     if a.archiva:
         t = Tarea()
         t.archivar(a.archiva)
@@ -825,7 +818,13 @@ def main():
                         desde=desde,
                         hasta=hasta)
 
-        if not a.eliminabatch and not a.sumahhpbatch and not a.iniciabatch and not a.terminabatch and not a.pausabatch and len(tt):
+        if (not a.eliminabatch  and
+            not a.sumahhpbatch  and
+            not a.iniciabatch   and
+            not a.terminabatch  and
+            not a.pausacursando and
+            not a.pausabatch    and
+            len(tt) or a.muestra):
             print encabezado_tarea(desde=desde,hasta=hasta)
         if a.sumahhpbatch:
             suma = 0
@@ -835,17 +834,17 @@ def main():
             elif a.iniciabatch:
                 t.iniciar()
                 if a.muestra:
-                    print t.formatear()
+                    print t.formatear(desde=desde,hasta=hasta)
             elif a.eliminabatch:
                 t.eliminar()
             elif a.terminabatch:
                 t.terminar()
                 if a.muestra:
-                    print t.formatear()
-            elif a.pausabatch:
+                    print t.formatear(desde=desde,hasta=hasta)
+            elif a.pausabatch or a.pausacursando:
                 t.pausar()
                 if a.muestra:
-                    print t.formatear()
+                    print t.formatear(desde=desde,hasta=hasta)
             else:
                 print t.formatear(desde=desde,hasta=hasta)
 
