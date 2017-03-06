@@ -112,124 +112,8 @@ def main():
     a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
 
     p = a.parse_args()
-    if p.riesgos:
-        riesgos = listar(e_ids=p.exceptoobservacion,
-                         ids=p.filtroobservacion,
-                         completada=p.completada,
-                         tipo=p.riesgos,
-                         tareas_id=p.filtrotarea,
-                         tareas_nombre=p.filtronombretarea,
-                         proyectos=p.filtroproyecto,
-                         proyectos_nombre=p.filtronombreproyecto,
-                         nombres=p.filtronombre)
-        if p.maximaprioridad:
-            o = tareas.Observacion(p.maximaprioridad)
-            o.maxima_prioridad(entre=[r.id for r in riesgos])
-        elif p.minimaprioridad:
-            o = tareas.Observacion(p.minimaprioridad)
-            o.minima_prioridad(entre=[r.id for r in riesgos])
-        elif p.terminabatch:
-            for r in riesgos:
-                terminar([r.id],p.comentario)
-        else:
-            for r in riesgos:
-                print r.formatear()
 
-    elif p.amenazas:
-        amenazas = listar(e_ids=p.exceptoobservacion,
-                          ids=p.filtroobservacion,
-                          completada=p.completada,
-                          tipo=p.amenazas,
-                          tareas_nombre=p.filtronombretarea,
-                          tareas_id=p.filtrotarea,
-                          proyectos=p.filtroproyecto,
-                          proyectos_nombre=p.filtronombreproyecto,
-                          nombres=p.filtronombre)
-        if p.maximaprioridad:
-            o = tareas.Observacion(p.maximaprioridad)
-            o.maxima_prioridad(entre=[a.id for a in amenazas])
-        elif p.minimaprioridad:
-            o = tareas.Observacion(p.minimaprioridad)
-            o.minima_prioridad(entre=[a.id for a in amenazas])
-        elif p.terminabatch:
-            for a in amenazas:
-                terminar([a.id],p.comentario)
-        else:
-            for a in amenazas:
-                print a.formatear()
-
-    elif p.todo:
-        todo = listar(e_ids=p.exceptoobservacion,
-                      ids=p.filtroobservacion,
-                      completada=p.completada,
-                      tipo=p.todo,
-                      tareas_nombre=p.filtronombretarea,
-                      tareas_id=p.filtrotarea,
-                      proyectos=p.filtroproyecto,
-                      proyectos_nombre=p.filtronombreproyecto,
-                      nombres=p.filtronombre)
-        if p.maximaprioridad:
-            o = tareas.Observacion(p.maximaprioridad)
-            o.maxima_prioridad(entre=[t.id for t in todo])
-        elif p.minimaprioridad:
-            o = tareas.Observacion(p.minimaprioridad)
-            o.minima_prioridad(entre=[t.id for t in todo])
-        elif p.terminabatch:
-            for t in todo:
-                terminar([t.id],p.comentario)
-        elif p.postponebatch:
-            if p.motivo:
-                for t in todo:
-                    postponer([t.id],motivo=p.motivo)
-        else:
-            for t in todo:
-                print t.formatear()
-    elif p.pasado:
-        pasadas = listar(e_ids=p.exceptoobservacion,
-                         ids=p.filtroobservacion,
-                         tipo=p.pasado,
-                         tareas_nombre=p.filtronombretarea,
-                         completada=p.completada,
-                         tareas_id=p.filtrotarea,
-                         proyectos=p.filtroproyecto,
-                         proyectos_nombre=p.filtronombreproyecto,
-                         nombres=p.filtronombre)
-        if p.maximaprioridad:
-            o = tareas.Observacion(p.maximaprioridad)
-            o.maxima_prioridad(entre=[pa.id for pa in pasadas])
-        elif p.minimaprioridad:
-            o = tareas.Observacion(p.minimaprioridad)
-            o.minima_prioridad(entre=[pa.id for pa in pasadas])
-        elif p.terminabatch:
-            for pa in pasadas:
-                terminar([pa.id],p.comentario)
-        else:
-            for pa in pasadas:
-                print pa.formatear()
-
-    elif p.normal:
-        normales = listar(e_ids=e.exceptoobservacion,
-                          ids=p.filtroobservacion,
-                          tipo=p.normal,
-                          tareas_nombre=p.filtronombretarea,
-                          completada=p.completada,
-                          tareas_id=p.filtrotarea,
-                          proyectos=p.filtroproyecto,
-                          proyectos_nombre=p.filtronombreproyecto,
-                          nombres=p.filtronombre)
-        if p.maximaprioridad:
-            o = tareas.Observacion(p.maximaprioridad)
-            o.maxima_prioridad(entre=[n.id for n in normales])
-        elif p.minimaprioridad:
-            o = tareas.Observacion(p.minimaprioridad)
-            o.minima_prioridad(entre=[n.id for n in normales])
-        elif p.terminabatch:
-            for n in normales:
-                terminar([n.id],p.comentario)
-        else:
-            for n in normales:
-                print n.formatear()
-    elif p.termina:
+    if p.termina:
         terminar(ids=p.termina,comentario=p.comentario)
     elif p.subirprioridad:
         subir_prioridad(ids=p.subirprioridad)
@@ -239,26 +123,42 @@ def main():
         if p.motivo:
             postponer(ids=p.postponer,motivo=p.motivo)
     else:
+        tipo = None
+        if p.riesgos:
+            tipo = tareas.OBS_RIESGO
+        if p.amenazas:
+            tipo = tareas.OBS_AMENAZA
+        if p.normal:
+            tipo = tareas.OBS_NORMAL
+        if p.pasado:
+            tipo = tareas.OBS_PASADO
+        if p.todo:
+            tipo = tareas.OBS_TODO
+
         observaciones = listar(e_ids=p.exceptoobservacion,
-                        ids=p.filtroobservacion,
-                        tareas_nombre=p.filtronombretarea,
-                        tareas_id=p.filtrotarea,
-                        completada=p.completada,
-                        proyectos=p.filtroproyecto,
-                        proyectos_nombre=p.filtronombreproyecto,
-                        nombres=p.filtronombre)
+                               ids=p.filtroobservacion,
+                               completada=p.completada,
+                               tipo=tipo,
+                               tareas_id=p.filtrotarea,
+                               tareas_nombre=p.filtronombretarea,
+                               proyectos=p.filtroproyecto,
+                               proyectos_nombre=p.filtronombreproyecto,
+                               nombres=p.filtronombre)
+
         if p.maximaprioridad:
             o = tareas.Observacion(p.maximaprioridad)
             o.maxima_prioridad(entre=[obs.id for obs in observaciones])
         elif p.minimaprioridad:
             o = tareas.Observacion(p.minimaprioridad)
             o.minima_prioridad(entre=[obs.id for obs in observaciones])
-        elif p.terminabatch:
-            for obs in observaciones:
-                terminar([obs.id],p.comentario)
         else:
             for obs in observaciones:
-                print obs.formatear()
+                if p.terminabatch:
+                    terminar([obs.id],p.comentario)
+                elif obs.tipo == tareas.OBS_TODO and p.postponebatch and p.motivo:
+                    postponer([obs.id],motivo=p.motivo)
+                else:
+                    print obs.formatear()
 
 if __name__ == '__main__':
     main()
