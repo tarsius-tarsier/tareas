@@ -803,13 +803,16 @@ def main():
             print t.formatear()
         procesa_argumento_observacion(parser=a,tarea_id=t.id)
     elif a.tareas or not a.tareas:
+        desde = alias_fechahora(a.desde)
+        hasta = alias_fechahora(a.hasta)
         estados = None
-        if a.filtroestado is None:
+        if desde or hasta:
+            estados = [CURSANDO,NUEVO,PAUSADO,TERMINADO]
+        elif a.filtroestado is None:
             estados = [CURSANDO,NUEVO,PAUSADO]
         else:
             estados = a.filtroestado
-        desde = alias_fechahora(a.desde)
-        hasta = alias_fechahora(a.hasta)
+
         tt = tareas(proyectos=a.filtroproyecto,
                         estados=estados,
                         ids=a.filtrotarea,
