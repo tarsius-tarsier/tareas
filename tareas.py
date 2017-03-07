@@ -180,16 +180,16 @@ def tareas(proyectos_nombre=None,proyectos=None,estados=None,desde=None,hasta=No
         valores  += ids
 
     if desde is not None:
-        filtros  += ['id in(select distinct tarea_id from lapso where termino>=?)']
+        filtros  += ['id in(select distinct tarea_id from lapso where modificado>=?)']
         valores  += [desde]
+
+    if hasta is not None:
+        filtros  += ['id in(select distinct tarea_id from lapso where modificado<=?)']
+        valores  += [hasta]
 
     if nombres is not None:
         filtros  += ["id in(select distinct id from tarea where {} )".format(' or '.join('nombre like ? ' for x in nombres))]
         valores  += ['%{}%'.format(n) for n in nombres]
-
-    if hasta is not None:
-        filtros  += ['id in(select distinct tarea_id from lapso where termino<=?)']
-        valores  += [hasta]
 
     if len(filtros) > 0:
         query += 'where '
@@ -390,8 +390,8 @@ class Tarea():
             log    = 'insert into log (tarea_id,creado,log) values(?,?,?)'
             cursor.execute(log,(self.id,ahora,'iniciando'))
             # crea entrada en lapso
-            lapso  = 'insert into lapso (tarea_id,inicio,creado) values(?,?,?)'
-            cursor.execute(lapso,(self.id,ahora,ahora))
+            lapso  = 'insert into lapso (tarea_id,inicio,creado,modificado) values(?,?,?,?)'
+            cursor.execute(lapso,(self.id,ahora,ahora,ahora))
             conexion.commit()
             self.desde_db(self.id)
 
