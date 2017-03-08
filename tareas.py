@@ -762,6 +762,8 @@ def main():
     p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     p.add_argument('-v','--ver',help='ver tarea')
     a = p.parse_args()
+    if a.pausacursando:
+        pausa_cursando()
     if a.archiva:
         t = Tarea()
         t.archivar(a.archiva)
@@ -805,54 +807,60 @@ def main():
     elif a.tareas or not a.tareas:
         desde = alias_fechahora(a.desde)
         hasta = alias_fechahora(a.hasta)
-        estados = None
-        if desde or hasta:
-            estados = [CURSANDO,NUEVO,PAUSADO,TERMINADO]
-        elif a.filtroestado is None:
-            estados = [CURSANDO,NUEVO,PAUSADO]
-        else:
-            estados = a.filtroestado
+        if (desde or
+            hasta or
+            a.filtroproyecto or
+            a.filtrotarea or
+            a.filtronombre or
+            a.filtroestado):
 
-        tt = tareas(proyectos=a.filtroproyecto,
+            estados = None
+            if desde or hasta:
+                estados = [CURSANDO,NUEVO,PAUSADO,TERMINADO]
+            elif a.filtroestado is None:
+                estados = [CURSANDO,NUEVO,PAUSADO]
+            else:
+                estados = a.filtroestado
+
+            tt = tareas(proyectos=a.filtroproyecto,
                         estados=estados,
                         ids=a.filtrotarea,
                         proyectos_nombre=a.filtroproyectonombre,
                         nombres=a.filtronombre,
                         desde=desde,
                         hasta=hasta)
-
-        if (not a.eliminabatch  and
-            not a.sumahhpbatch  and
-            not a.iniciabatch   and
-            not a.terminabatch  and
-            not a.pausacursando and
-            not a.pausabatch    and
-            len(tt) or a.muestra):
-            print encabezado_tarea(desde=desde,hasta=hasta)
-        if a.sumahhpbatch:
-            suma = 0
-        for t in tt:
+            if (not a.eliminabatch  and
+                not a.sumahhpbatch  and
+                not a.iniciabatch   and
+                not a.terminabatch  and
+                not a.pausacursando and
+                not a.pausabatch    and
+                len(tt) or a.muestra):
+                print encabezado_tarea(desde=desde,hasta=hasta)
             if a.sumahhpbatch:
-                suma = suma + t.hh(desde=desde,hasta=hasta)
-            elif a.iniciabatch:
-                t.iniciar()
-                if a.muestra:
+                suma = 0
+            for t in tt:
+                if a.sumahhpbatch:
+                    suma = suma + t.hh(desde=desde,hasta=hasta)
+                elif a.iniciabatch:
+                    t.iniciar()
+                    if a.muestra:
+                        print t.formatear(desde=desde,hasta=hasta)
+                elif a.eliminabatch:
+                    t.eliminar()
+                elif a.terminabatch:
+                    t.terminar()
+                    if a.muestra:
+                        print t.formatear(desde=desde,hasta=hasta)
+                elif a.pausabatch:
+                    t.pausar()
+                    if a.muestra:
+                        print t.formatear(desde=desde,hasta=hasta)
+                else:
                     print t.formatear(desde=desde,hasta=hasta)
-            elif a.eliminabatch:
-                t.eliminar()
-            elif a.terminabatch:
-                t.terminar()
-                if a.muestra:
-                    print t.formatear(desde=desde,hasta=hasta)
-            elif a.pausabatch or a.pausacursando:
-                t.pausar()
-                if a.muestra:
-                    print t.formatear(desde=desde,hasta=hasta)
-            else:
-                print t.formatear(desde=desde,hasta=hasta)
 
-        if a.sumahhpbatch:
-            print suma
+            if a.sumahhpbatch:
+                print suma
 
 def alias_fecha(alias,incluye_hora=False):
     fecha = None
@@ -866,6 +874,10 @@ def alias_fecha(alias,incluye_hora=False):
         except:
             fecha = None
     return time.mktime(fecha.timetuple())
+
+def pausa_cursando():
+    for t in tareas(estados=[CURSANDO]):
+        t.pausar()
 
 def alias_fechahora(alias):
     fecha = None
