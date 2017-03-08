@@ -807,12 +807,13 @@ def main():
     elif a.tareas or not a.tareas:
         desde = alias_fechahora(a.desde)
         hasta = alias_fechahora(a.hasta)
-        if (desde or
-            hasta or
-            a.filtroproyecto or
-            a.filtrotarea or
-            a.filtronombre or
-            a.filtroestado):
+
+        if (desde is not None or
+            hasta is not None or
+            a.filtroproyecto is not None or
+            a.filtrotarea is not None or
+            a.filtronombre is not None or
+            a.filtroestado is not None) or not a.pausacursando:
 
             estados = None
             if desde or hasta:
@@ -833,7 +834,6 @@ def main():
                 not a.sumahhpbatch  and
                 not a.iniciabatch   and
                 not a.terminabatch  and
-                not a.pausacursando and
                 not a.pausabatch    and
                 len(tt) or a.muestra):
                 print encabezado_tarea(desde=desde,hasta=hasta)
