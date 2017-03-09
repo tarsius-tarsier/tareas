@@ -757,7 +757,8 @@ def main():
     p.add_argument('-pid','--proyecto',  help='id de proyecto')
     p.add_argument('-r','--recupera', help='recupera archivos')
     p.add_argument('-s','--editar',help='edita tarea')
-    p.add_argument('-sb','--sumahhpbatch',action="store_true",help='termina en modo batch')
+    p.add_argument('-sb','--editabatch',action="store_true",help='edita en modo batch')
+    p.add_argument('-Sb','--sumahhpbatch',action="store_true",help='termina en modo batch')
     p.add_argument('-t','--terminar',help='termina una tarea')
     p.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
     p.add_argument('-v','--ver',help='ver tarea')
@@ -833,6 +834,7 @@ def main():
             if (not a.eliminabatch  and
                 not a.sumahhpbatch  and
                 not a.iniciabatch   and
+                not a.editabatch    and
                 not a.terminabatch  and
                 not a.pausabatch    and
                 len(tt) or a.muestra):
@@ -844,6 +846,13 @@ def main():
                     suma = suma + t.hh(desde=desde,hasta=hasta)
                 elif a.iniciabatch:
                     t.iniciar()
+                    if a.muestra:
+                        print t.formatear(desde=desde,hasta=hasta)
+                elif a.editabatch:
+                    t.editar(nombre=a.nombre,
+                             fecha_limite=a.fechalimite,
+                             estimacion=a.estimacion)
+                    procesa_argumento_observacion(parser=a,tarea_id=t.id)
                     if a.muestra:
                         print t.formatear(desde=desde,hasta=hasta)
                 elif a.eliminabatch:
