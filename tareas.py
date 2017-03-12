@@ -597,6 +597,24 @@ class Observacion():
         if tupla is not None:
             self.desde_tupla(tupla)
 
+    def edita(self,observacion,tarea_id,completado,prioridad,tipo):
+        ahora = int(time.time())
+        if observacion is not None:
+            cursor.execute("update observacion set observacion=?,modificado=? where id=?", (observacion,ahora,self.id))
+            conexion.commit()
+        if tipo is not None and tipo in (OBS_RIESGO,OBS_TODO,OBS_AMENAZA,OBS_NORMAL,OBS_PASADO,OBS_RETRASO):
+            cursor.execute("update observacion set tipo=?,modificado=? where id=?", (tipo,ahora,self.id))
+            conexion.commit()
+        if tarea_id is not None and isinstance(tarea_id,(int,long)):
+            cursor.execute("update observacion set tarea_id=?,modificado=? where id=?", (tarea_id,ahora,self.id))
+            conexion.commit()
+        if completado is not None and isinstance(completado,bool):
+            cursor.execute("update observacion set completado=?,modificado=? where id=?", (completado,ahora,self.id))
+            conexion.commit()
+        if prioridad is not None and isinstance(prioridad,int):
+            cursor.execute("update observacion set prioridad=?,modificado=? where id=?", (prioridad,ahora,self.id))
+            conexion.commit()
+
     def formatear_todo(self):
         return '{}\t{}\t{}\t{}'.format(self.id,self.prioridad,self.tarea_id,self.observacion)
 
