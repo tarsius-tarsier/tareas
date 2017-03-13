@@ -82,6 +82,10 @@ def main():
                        action='append',
                        type=int,
                        help='sube la prioridad de observacion')
+    a.add_argument('-e',
+                       '--elimina',
+                       type=int,
+                       help='elimina observacion')
     a.add_argument('-s',
                        '--edita',
                        type=int,
@@ -93,7 +97,7 @@ def main():
                        '--tareaid',
                        type=int,
                        help='id de tarea')
-    a.add_argument('-e',
+    a.add_argument('-d',
                        '--completado',
                        type=bool,
                        help='activa o desactiva observacion')
@@ -141,6 +145,9 @@ def main():
     elif p.edita:
         o = tareas.Observacion(id=p.edita)
         o.edita(p.observacion,p.tareaid,p.completado,p.prioridad,p.tipo)
+    elif p.elimina:
+        o = tareas.Observacion(id=p.elimina)
+        o.elimina()
     elif p.subirprioridad:
         subir_prioridad(ids=p.subirprioridad)
     elif p.bajarprioridad:

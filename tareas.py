@@ -597,6 +597,10 @@ class Observacion():
         if tupla is not None:
             self.desde_tupla(tupla)
 
+    def elimina(self):
+        cursor.execute("delete from observacion where id=?", (self.id, ))
+        conexion.commit()
+
     def edita(self,observacion,tarea_id,completado,prioridad,tipo):
         ahora = int(time.time())
         if observacion is not None:
