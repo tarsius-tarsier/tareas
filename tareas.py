@@ -84,6 +84,7 @@ def proyectos(imprimir=True):
 
 def get_observaciones(tipo=None,
                       completado=False,
+                      incluye_completado=False,
                       desde=None,
                       hasta=None,
                       ids=None,
@@ -94,10 +95,20 @@ def get_observaciones(tipo=None,
                       proyectos_nombre=None,
                       ordenadas=None,
                       nombres=None):
+
+    # para contar los retrasados
+    valores = [OBS_RETRASO]
+    filtros = []
+
     if ordenadas is None:
         ordenadas = 'creado asc'
-    filtros = ['completado=?']
-    valores = [OBS_RETRASO,completado]
+
+    if incluye_completado:
+        filtros  += ['completado in (?,?)']
+        valores  += [True,False]
+    else:
+        filtros = ['completado=?']
+        valores  += [completado]
 
     if tipo is not None:
         filtros  += ['tipo=?']
