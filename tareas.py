@@ -630,11 +630,36 @@ class Observacion():
             cursor.execute("update observacion set prioridad=?,modificado=? where id=?", (prioridad,ahora,self.id))
             conexion.commit()
 
-    def formatear_todo(self):
-        return '{}\t{}\t{}\t{}'.format(self.id,self.prioridad,self.tarea_id,self.observacion)
+    def formatear(self,campos=[]):
+        mostrar = []
+        for c in campos:
+            if c == 'i':
+                mostrar.append(self.id)
+            if c == 'co':
+                mostrar.append(self.completado)
+            if c == 'pr':
+                mostrar.append(self.prioridad)
+            if c == 'ti':
+                mostrar.append(self.tipo)
+            if c == 'ta':
+                mostrar.append(self.tarea_id)
+            if c == 'po':
+                mostrar.append(self.postpuesto)
+            if c == 'o':
+                mostrar.append(self.observacion)
+            if c == 'cr':
+                mostrar.append(convierte_desde_unix(self.creado))
 
-    def formatear(self):
-        return '{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(self.id,self.completado,self.prioridad,self.tipo,self.tarea_id,self.postpuesto,self.observacion)
+        if len(mostrar) == 0:
+            mostrar = [self.id,
+                      self.completado,
+                      self.prioridad,
+                      self.tipo,
+                      self.tarea_id,
+                      self.postpuesto,
+                      self.observacion]
+
+        return '\t'.join('{}' for c in mostrar).format(*mostrar)
     
     def completa(self,comentario=None):
         ahora = int(time.time())

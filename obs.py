@@ -143,7 +143,7 @@ def main():
     a.add_argument('-ftn','--filtronombretarea',action='append',help='filtro nombre tarea')
     a.add_argument('-t','--termina',type=int,help='termina',action='append')
     a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
-
+    a.add_argument('-y', '--campos', default=[], action='append', help='campos')
     p = a.parse_args()
 
     if p.termina:
@@ -198,7 +198,7 @@ def main():
                 elif obs.tipo == tareas.OBS_TODO and p.postponebatch and p.motivo:
                     postponer([obs.id],motivo=p.motivo)
                 else:
-                    print obs.formatear()
+                    print obs.formatear(campos=p.campos)
 
 if __name__ == '__main__':
     main()
