@@ -10,6 +10,7 @@ def listar(ids=None,
            tareas_nombre=None,
            incluye_completado=False,
            proyectos=None,
+           ordenadas=None,
            proyectos_nombre=None,
            nombres=None):
     return tareas.get_observaciones(tipo=tipo,
@@ -22,7 +23,7 @@ def listar(ids=None,
                                     tareas_nombre=tareas_nombre,
                                     proyectos=proyectos,
                                     proyectos_nombre=proyectos_nombre,
-                                    ordenadas='prioridad desc')
+                                    ordenadas=ordenadas)
 
 def subir_prioridad(ids):
     for id in ids:
@@ -143,7 +144,8 @@ def main():
     a.add_argument('-ftn','--filtronombretarea',action='append',help='filtro nombre tarea')
     a.add_argument('-t','--termina',type=int,help='termina',action='append')
     a.add_argument('-tb','--terminabatch',action="store_true",help='termina en modo batch')
-    a.add_argument('-y', '--campos', default=[], action='append', help='campos')
+    a.add_argument('-y', '--campos', default=[], nargs='*', help='campos')
+    a.add_argument('-x', '--ordenadas', default=['p'], nargs='*', help='ordenadas')
     p = a.parse_args()
 
     if p.termina:
@@ -182,6 +184,7 @@ def main():
                                tareas_id=p.filtrotarea,
                                tareas_nombre=p.filtronombretarea,
                                proyectos=p.filtroproyecto,
+                               ordenadas=p.ordenadas,
                                proyectos_nombre=p.filtronombreproyecto,
                                nombres=p.filtronombre)
 

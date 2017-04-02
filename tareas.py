@@ -100,8 +100,33 @@ def get_observaciones(tipo=None,
     valores = [OBS_RETRASO]
     filtros = []
 
-    if ordenadas is None:
-        ordenadas = 'creado asc'
+    ordenadas_ext = []
+
+    for o in ordenadas:
+        if o == 'i':
+            ordenadas_ext.append('o.id desc')
+        if o == 'I':
+            ordenadas_ext.append('o.id')
+        if o == 'o':
+            ordenadas_ext.append('observacion desc')
+        if o == 'O':
+            ordenadas_ext.append('observacion')
+        if o == 'p':
+            ordenadas_ext.append('prioridad desc')
+        if o == 'P':
+            ordenadas_ext.append('prioridad')
+        if o == 'c':
+            ordenadas_ext.append('creado desc')
+        if o == 'C':
+            ordenadas_ext.append('creado')
+        if o == 'm':
+            ordenadas_ext.append('modificado desc')
+        if o == 'M':
+            ordenadas_ext.append('modificado')
+        if o == 't':
+            ordenadas_ext.append('postpuesto desc')
+        if o == 'T':
+            ordenadas_ext.append('postpuesto')
 
     if incluye_completado:
         filtros  += ['completado in (?,?)']
@@ -165,7 +190,7 @@ def get_observaciones(tipo=None,
              )
 
     query += 'where '
-    query = '{}{} order by {}'.format(query,' and '.join(filtros),ordenadas)
+    query = '{}{} order by {}'.format(query,' and '.join(filtros),','.join(ordenadas_ext))
     cursor.execute(query,valores)
     return [Observacion(tupla=r) for r in cursor.fetchall()]
 
@@ -633,19 +658,19 @@ class Observacion():
     def formatear(self,campos=[]):
         mostrar = []
         for c in campos:
-            if c == 'i':
+            if c == 'id':
                 mostrar.append(self.id)
             if c == 'co':
                 mostrar.append(self.completado)
             if c == 'pr':
                 mostrar.append(self.prioridad)
+            if c == 'po':
+                mostrar.append(self.postpuesto)
             if c == 'ti':
                 mostrar.append(self.tipo)
             if c == 'ta':
                 mostrar.append(self.tarea_id)
-            if c == 'po':
-                mostrar.append(self.postpuesto)
-            if c == 'o':
+            if c == 'ob':
                 mostrar.append(self.observacion)
             if c == 'cr':
                 mostrar.append(convierte_desde_unix(self.creado))
