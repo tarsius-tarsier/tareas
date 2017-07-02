@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import sqlite3
 import argparse
 import time
@@ -225,12 +226,13 @@ def tareas(proyectos_nombre=None,proyectos=None,estados=None,desde=None,hasta=No
 
     if nombres is not None:
         filtros  += ["id in(select distinct id from tarea where {} )".format(' or '.join('nombre like ? ' for x in nombres))]
-        valores  += ['%{}%'.format(n) for n in nombres]
+        valores  += ['%{}%'.format(n).decode('utf8') for n in nombres]
 
     if len(filtros) > 0:
         query += 'where '
 
     query = '{}{} order by creada asc'.format(query,' and '.join(filtros))
+
     cursor.execute(query, valores)
     r = cursor.fetchall()
     tareas = []
@@ -252,7 +254,7 @@ class Proyecto():
         self.nombre = tupla[1]
 
     def formatear(self):
-        return '{}\t{}'.format(self.id,self.nombre)
+        return '{}\t{}'.format(self.id,self.nombre.encode('utf8'))
 
 def convierte_a_unix(fecha):
     try:
@@ -329,7 +331,7 @@ class Tarea():
 
     def guardar(self):
         cursor.execute("insert into tarea (nombre,hh_estimadas,proyecto_id,estado,fecha_limite) values (?,?,?,?,?)",
-                       (self.nombre, self.estimacion, self.proyecto_id,NUEVO,self.fecha_limite))
+                       (self.nombre.decode('utf8'), self.estimacion, self.proyecto_id,NUEVO,self.fecha_limite))
         conexion.commit()
         self.desde_db(cursor.lastrowid)
 
@@ -484,7 +486,7 @@ class Tarea():
             return 'id:\t{}\npid:\t{}\nnombre:\t{}\nestado:\t{}\nhh:\t{}\nest:\t{}\ndif:\t{}\n{}fl:\t{}\nr:\t{}\nobs:\n{}'.format(
                     self.id,
                     self.proyecto_id,
-                    self.nombre,
+                    self.nombre.encode('utf8'),
                     self.estado,
                     self.hh(),
                     self.hh_estimadas,
@@ -493,7 +495,7 @@ class Tarea():
                     fl,
                     self.resta(),obs_str)
         else:
-            return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre)
+            return '{}\t{}\t{}\t{}\t{}{}\t{}\t{}'.format(self.id,self.proyecto_id,self.estado,self.hh(),hhp,dif,self.resta(),self.nombre.encode('utf8'))
 
 def encabezado_proyecto():
     return 'id\tnombre'
@@ -640,7 +642,7 @@ class Observacion():
     def edita(self,observacion,tarea_id,completado,prioridad,tipo):
         ahora = int(time.time())
         if observacion is not None:
-            cursor.execute("update observacion set observacion=?,modificado=? where id=?", (observacion,ahora,self.id))
+            cursor.execute("update observacion set observacion=?,modificado=? where id=?", (observacion.decode('utf8'),ahora,self.id))
             conexion.commit()
         if tipo is not None and tipo in (OBS_RIESGO,OBS_TODO,OBS_AMENAZA,OBS_NORMAL,OBS_PASADO,OBS_RETRASO):
             cursor.execute("update observacion set tipo=?,modificado=? where id=?", (tipo,ahora,self.id))
@@ -671,7 +673,7 @@ class Observacion():
             if c == 'ta':
                 mostrar.append(self.tarea_id)
             if c == 'ob':
-                mostrar.append(self.observacion)
+                mostrar.append(self.observacion.encode('utf8'))
             if c == 'cr':
                 mostrar.append(convierte_desde_unix(self.creado))
 
@@ -682,7 +684,7 @@ class Observacion():
                       self.tipo,
                       self.tarea_id,
                       self.postpuesto,
-                      self.observacion]
+                      self.observacion.encode('utf8')]
 
         return '\t'.join('{}' for c in mostrar).format(*mostrar)
     
@@ -796,7 +798,7 @@ class Observacion():
                                              'tarea_id, '
                                              'completado) '
                     'values (?,?,?,?,?,?) ')
-        valores = [self.observacion,
+        valores = [self.observacion.decode('utf8'),
                    self.tipo,
                    self.prioridad,
                    self.estado_del_arte_id,
